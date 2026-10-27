@@ -9,6 +9,7 @@ struct PortalEffect: UIViewRepresentable {
     let age: Float
     let phase: TunnelPhase
     let buttonDiameter: CGFloat
+    let logoBounds: CGRect
     let active: Bool
     @Environment(\.displayScale) private var displayScale
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -23,7 +24,7 @@ struct PortalEffect: UIViewRepresentable {
         view.colorPixelFormat = .bgra8Unorm
         view.isPaused = true
         view.enableSetNeedsDisplay = true
-        view.contentScaleFactor = min(displayScale, 1.75)
+        view.contentScaleFactor = displayScale
         view.isUserInteractionEnabled = false
         view.delegate = context.coordinator
         return view
@@ -34,12 +35,13 @@ struct PortalEffect: UIViewRepresentable {
         renderer.active = active
         renderer.setMotionEnabled(active && !reduceMotion, view: view)
         renderer.buttonDiameter = buttonDiameter
+        renderer.logoBounds = logoBounds
         renderer.uniforms.time = time
         renderer.uniforms.power = power
         renderer.uniforms.busy = busy
         renderer.uniforms.age = age
         renderer.uniforms.phase = phase == .connected ? 2 : phase == .stopping ? 3 : phase == .connecting || phase == .reconnecting ? 1 : 0
-        view.contentScaleFactor = min(displayScale, 1.75)
+        view.contentScaleFactor = displayScale
         if active { view.setNeedsDisplay() }
     }
 
@@ -58,21 +60,46 @@ struct PortalEffect: UIViewRepresentable {
         var age: Float = 10
         var phase: Float = 0
         var tilt = SIMD2<Float>(repeating: 0)
+        var logoRect = SIMD4<Float>(repeating: 0)
     }
 
     final class Renderer: NSObject, MTKViewDelegate {
         let device: MTLDevice
         private let queue: MTLCommandQueue
         private let pipeline: MTLRenderPipelineState
+        private let logoMask: MTLTexture
         private let motion = CMMotionManager()
         private var reference: CMAttitude?
         private var orientation: UIInterfaceOrientation = .unknown
         var uniforms = Uniforms()
         var buttonDiameter: CGFloat = 164
+        var logoBounds = CGRect.zero
         var active = false
 
         init?(device: MTLDevice? = MTLCreateSystemDefaultDevice()) {
             guard let device, let queue = device.makeCommandQueue() else { return nil }
+            guard let logo = UIImage(named: "Portal") else {
+                assertionFailure("The portal logo asset is missing.")
+                return nil
+            }
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = 1
+            format.opaque = false
+            let image = UIGraphicsImageRenderer(size: CGSize(width: 256, height: 256), format: format).image { _ in
+                logo.draw(in: CGRect(x: 0, y: 0, width: 256, height: 256))
+            }
+            guard let cgImage = image.cgImage else {
+                assertionFailure("Could not rasterize the portal logo.")
+                return nil
+            }
+            do {
+                logoMask = try MTKTextureLoader(device: device).newTexture(cgImage: cgImage,
+                    options: [.SRGB: false, .origin: MTKTextureLoader.Origin.topLeft])
+            }
+            catch {
+                assertionFailure("Could not create the portal logo texture: \(error)")
+                return nil
+            }
             guard let library = device.makeDefaultLibrary(), let vertex = library.makeFunction(name: "portalVertex"),
                   let fragment = library.makeFunction(name: "portalFragment") else {
                 assertionFailure("The portal Metal library is missing.")
@@ -146,8 +173,13 @@ struct PortalEffect: UIViewRepresentable {
                   let command = queue.makeCommandBuffer(), let encoder = command.makeRenderCommandEncoder(descriptor: descriptor) else { return }
             uniforms.resolution = SIMD2(Float(view.drawableSize.width), Float(view.drawableSize.height))
             uniforms.scale = Float(min(view.bounds.width, view.bounds.height) * 0.43 / buttonDiameter)
+            let scaleX = Float(view.drawableSize.width / view.bounds.width)
+            let scaleY = Float(view.drawableSize.height / view.bounds.height)
+            uniforms.logoRect = SIMD4(Float(logoBounds.minX) * scaleX, Float(logoBounds.minY) * scaleY,
+                                     Float(logoBounds.width) * scaleX, Float(logoBounds.height) * scaleY)
             encoder.setRenderPipelineState(pipeline)
             encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
+            encoder.setFragmentTexture(logoMask, index: 0)
             encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
             encoder.endEncoding()
             command.present(drawable)

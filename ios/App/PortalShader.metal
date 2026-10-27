@@ -11,6 +11,7 @@ struct PortalUniforms {
     float age;
     float phase;
     float2 tilt;
+    float4 logoRect;
 };
 
 struct PortalVertex {
@@ -44,7 +45,8 @@ float fbm(float2 p) {
   return f;
 }
 float band(float d, float width) { return exp(-d * d / (width * width)); }
-fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUniforms &uniforms [[buffer(0)]]) {
+fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUniforms &uniforms [[buffer(0)]],
+                              texture2d<float> logoMask [[texture(0)]]) {
     float2 position = input.position.xy;
     float2 uResolution = uniforms.resolution;
     float uScale = uniforms.scale;
@@ -54,6 +56,8 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
     float uAge = uniforms.age;
     float uPhase = uniforms.phase;
     float2 uTilt = uniforms.tilt;
+    float4 uLogoRect = uniforms.logoRect;
+    constexpr sampler logoSampler(coord::normalized, address::clamp_to_edge, filter::linear);
   float2 rawPosition = (2.0 * float2(position.x, uResolution.y - position.y) - uResolution) / min(uResolution.x, uResolution.y);
   float2 p = rawPosition * uScale;
   float r = length(p);
@@ -135,6 +139,23 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
   face = mix(face, faceBottom, smoothstep(0.55, 1.0, faceShade));
   float interior = 1.0 - smoothstep(0.425, 0.435, r);
   col = mix(col, face, interior);
+  if (uLogoRect.z > 0.0 && uLogoRect.w > 0.0) {
+    float2 logoUV = (position - uLogoRect.xy) / uLogoRect.zw;
+    if (all(logoUV >= float2(0.0)) && all(logoUV <= float2(1.0))) {
+      float mask = logoMask.sample(logoSampler, logoUV).a;
+      float2 glyph = float2(logoUV.x * 2.0 - 1.0, 1.0 - logoUV.y * 2.0);
+      float sweep = dot(glyph, float2(0.8, 0.6)) + sin(t * 1.4) * 1.35
+        - dot(uTilt, float2(0.9, -0.7));
+      float gloss = exp(-sweep * sweep / 0.035);
+      float silk = 0.5 + 0.5 * sin(glyph.x * 5.0 + glyph.y * 4.0 - t * 1.8
+        + dot(uTilt, float2(1.1, 0.8)));
+      float sheen = 0.20 + 0.18 * silk + 0.52 * gloss * (0.65 + 0.35 * uPower + 0.15 * uBusy);
+      float3 logo = mix(mint * 0.80, ice, clamp(sheen, 0.0, 1.0));
+      float trace = pow(clamp(0.5 + 0.5 * sin(glyph.x * 12.0 - glyph.y * 22.0 - t * 2.2), 0.0, 1.0), 8.0);
+      logo += ice * trace * uBusy * 0.055;
+      col = mix(col, logo, mask);
+    }
+  }
   float opacity = 1.0 - smoothstep(0.88, 1.0, length(rawPosition));
   return half4(half3(clamp(col, 0.0, 1.0) * opacity), half(opacity));
 }

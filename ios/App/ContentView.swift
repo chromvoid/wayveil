@@ -135,7 +135,13 @@ private struct ConsentView: View {
     @Environment(\.dismiss) private var dismiss
     var body: some View {
         NavigationStack {
-            ScrollView { Text(L("consent_body")).frame(maxWidth: .infinity, alignment: .leading).padding(24) }
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    Text(L("consent_body")).frame(maxWidth: .infinity, alignment: .leading)
+                    Link(L("privacy_policy"), destination: URL(string: "https://link.chromvoid.com/privacy")!)
+                        .frame(minHeight: 44)
+                }.padding(24)
+            }
                 .background(Brand.background).navigationTitle(L("consent_title")).navigationBarTitleDisplayMode(.inline)
                 .safeAreaInset(edge: .bottom) { Button(L("agree_connect"), action: agree).buttonStyle(.borderedProminent).foregroundColor(Brand.ink).padding(20) }
                 .toolbar { ToolbarItem(placement: .cancellationAction) { Button(L("cancel")) { dismiss() } } }
@@ -158,7 +164,9 @@ private struct AboutView: View {
                         Text(String(format: L("about_body"), Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.1.0", AppIdentity.coreVersion))
                             .frame(maxWidth: .infinity, alignment: .leading)
                         Button(L("licenses")) { licenses = true }
-                        Link(L("source_code"), destination: URL(string: "https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.2")!)
+                        Link(L("privacy_policy"), destination: URL(string: "https://link.chromvoid.com/privacy")!)
+                            .frame(minHeight: 44)
+                        Link(L("source_code"), destination: URL(string: "https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.3")!)
                     }
                 }.padding(24)
             }

@@ -6,11 +6,11 @@ This public repository contains the iOS client and its networking dependencies. 
 
 ## Source version
 
-- Client: 0.1.0, build 2; bundle identifier `com.chromvoid.vpn`.
-- Source release: `ios-v0.1.0-build.2`.
+- Client: 0.1.0, build 3; bundle identifier `com.chromvoid.vpn`.
+- Source release: `ios-v0.1.0-build.3`.
 - Core: unmodified sing-box 1.14.4, commit `c005f35300ce76427dc285481ec5695f5b179cd2`.
 - Runtime dependencies: included in `third_party/sing-box/vendor/`, with their upstream licenses and `vendor/modules.txt`. Unused optional Cronet libraries and Windows-only Wintun binaries are excluded; neither is part of this iOS build. Gomobile binding-generator sources are also included to support vendor-mode builds. `go.mod` and `go.sum` retain exact module versions.
-- This is a source release, not an announcement of App Store availability. The earlier build 1 is not represented by this snapshot.
+- This is a source release, not an announcement of App Store availability. This snapshot represents build 3 only; available prior snapshots remain under their own source tags.
 
 ## Build
 
@@ -48,6 +48,6 @@ This source release does not grant an App Store exception for third-party GPL-co
 
 ## Links
 
-- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.2)
+- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.3)
 - [Privacy](https://link.chromvoid.com/privacy)
 - [Support](https://link.chromvoid.com/support)

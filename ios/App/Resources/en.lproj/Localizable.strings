@@ -39,6 +39,7 @@
 "about_body" = "Wayveil %1$@\nNetworking: sing-box %2$@\n\nA personal VPN client with no advertising or analytics. Connection profiles are stored in this device’s Keychain and are not synced to iCloud.";
 "licenses" = "Open source licenses";
 "source_code" = "Source code for this version";
+"privacy_policy" = "Privacy policy";
 "consent_title" = "Before you connect";
 "consent_body" = "Wayveil creates a VPN connection and sends traffic selected by your routing mode to the server in your profile. That server can observe destination addresses and DNS requests.\n\nCloudflare provides DNS resolution and an HTTPS connection check. Wayveil does not include advertising or analytics.\n\nOnly import profiles from people you trust.";
 "agree_connect" = "Agree and continue";
