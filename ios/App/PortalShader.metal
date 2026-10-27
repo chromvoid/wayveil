@@ -1,0 +1,140 @@
+// Ported from the approved C2 button preview in docs/brand/portal-shader-concept.html.
+#include <metal_stdlib>
+using namespace metal;
+
+struct PortalUniforms {
+    float2 resolution;
+    float scale;
+    float time;
+    float power;
+    float busy;
+    float age;
+    float phase;
+    float2 tilt;
+};
+
+struct PortalVertex {
+    float4 position [[position]];
+};
+
+vertex PortalVertex portalVertex(uint index [[vertex_id]]) {
+    const float2 positions[] = {float2(-1, -1), float2(3, -1), float2(-1, 3)};
+    return {float4(positions[index], 0, 1)};
+}
+
+constant float PI = 3.14159265;
+float hash(float2 p) {
+  p = fract(p * float2(123.34, 456.21));
+  p += dot(p, p + 45.32);
+  return fract(p.x * p.y);
+}
+float noise(float2 p) {
+  float2 i = floor(p), f = fract(p);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + float2(1, 0)), f.x),
+    mix(hash(i + float2(0, 1)), hash(i + float2(1, 1)), f.x), f.y);
+}
+float fbm(float2 p) {
+  float f = 0.0, amplitude = 0.5;
+  for (int i = 0; i < 4; i++) {
+    f += amplitude * noise(p);
+    p = float2x2(1.6, 1.2, -1.2, 1.6) * p + 3.1;
+    amplitude *= 0.5;
+  }
+  return f;
+}
+float band(float d, float width) { return exp(-d * d / (width * width)); }
+fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUniforms &uniforms [[buffer(0)]]) {
+    float2 position = input.position.xy;
+    float2 uResolution = uniforms.resolution;
+    float uScale = uniforms.scale;
+    float uTime = uniforms.time;
+    float uPower = uniforms.power;
+    float uBusy = uniforms.busy;
+    float uAge = uniforms.age;
+    float uPhase = uniforms.phase;
+    float2 uTilt = uniforms.tilt;
+  float2 rawPosition = (2.0 * float2(position.x, uResolution.y - position.y) - uResolution) / min(uResolution.x, uResolution.y);
+  float2 p = rawPosition * uScale;
+  float r = length(p);
+  float t = uTime;
+  float energy = 0.19 + uPower * 0.71 + uBusy * 0.65;
+  float closing = uPhase > 2.5 ? smoothstep(0.0, 0.72, uAge) : 0.0;
+  float radius = 0.588 - 0.09 * sin(closing * PI);
+  float2 circle = p / max(r, 0.0001);
+  float2 circle2 = float2(circle.x * circle.x - circle.y * circle.y, 2.0 * circle.x * circle.y);
+  float2 circle3 = float2(circle2.x * circle.x - circle2.y * circle.y, circle2.x * circle.y + circle2.y * circle.x);
+  float flow = fbm(circle * 3.4 + float2(t * 0.24, -t * 0.19));
+  float warp = (flow - 0.5) * (0.008 + 0.045 * uBusy);
+  float d = r - radius - warp;
+  float3 mint = float3(0.714, 0.941, 0.784);
+  float3 ice = float3(0.87, 1.0, 0.94);
+  float3 teal = float3(0.10, 0.58, 0.51);
+  float3 bg = mix(float3(0.047, 0.090, 0.110), float3(0.086, 0.18, 0.20), exp(-r * r * 1.7) * 0.72);
+  float grain = (hash(position) - 0.5) * 0.007;
+  float3 col = bg + grain;
+  col += teal * exp(-abs(d) * 11.0) * energy * 0.13;
+  col += mint * exp(-abs(d) * 33.0) * energy * 0.13;
+
+  float material = 1.0 - smoothstep(0.028, 0.055, abs(d));
+  float lightAngle = t * 0.65 + dot(uTilt, float2(1.8, -1.6));
+  float reflectionPhase = -2.0 * lightAngle + (flow - 0.5) * 0.35;
+  float reflection = pow(clamp(0.5 + 0.5 * (circle2.x * cos(reflectionPhase) - circle2.y * sin(reflectionPhase)), 0.0, 1.0), 2.5);
+  float veinPhase = d * 120.0 + flow * 16.0 - t * 1.8;
+  float vein = pow(clamp(0.5 + 0.5 * (circle3.y * cos(veinPhase) + circle3.x * sin(veinPhase)), 0.0, 1.0), 5.0);
+  float3 metal = mix(float3(0.06, 0.15, 0.15), mint, reflection * 0.86);
+  metal += ice * vein * 0.32 * energy;
+  col = mix(col, metal * (0.66 + energy * 0.52), material);
+
+  float edgeFlow = fbm(circle * 6.0 + float2(t * 0.38, t * 0.2));
+  float filament = band(d + 0.026 + 0.006 * edgeFlow, 0.0025);
+  float inner = band(d - 0.028 + 0.004 * flow, 0.002);
+  col += mint * filament * energy * (0.5 + reflection);
+  col += ice * inner * energy * (0.1 + 0.65 * edgeFlow);
+  float3 light = normalize(float3(cos(lightAngle) * 0.65, sin(lightAngle) * 0.65, 0.9));
+  float3 normal = float3(circle * 0.65, 0.76);
+  float glint = pow(max(0.0, dot(normalize(normal), light)), 22.0);
+  col += ice * band(d, 0.022) * glint * (0.24 + 0.26 * uPower);
+
+  float tail = pow(clamp(0.5 + 0.5 * dot(circle, float2(cos(t * 2.7), sin(t * 2.7))), 0.0, 1.0), 9.0);
+  col += ice * band(d, 0.008) * tail * uBusy * 1.5;
+  col += mint * band(d, 0.044) * tail * uBusy * 0.30;
+
+  float haze = fbm(p * 4.8 + float2(t * 0.13, -t * 0.22));
+  float curtainPhase = haze * 9.0 - t;
+  float curtain = pow(max(0.0, 1.0 - abs(circle3.y * cos(curtainPhase) + circle3.x * sin(curtainPhase))), 5.0);
+  float aura = exp(-abs(d - 0.055) * 13.0) * smoothstep(0.57, 0.69, r);
+  col += mix(teal, mint, haze) * curtain * aura * uBusy * 0.37;
+
+  for (int i = 0; i < 18; i++) {
+    float id = float(i);
+    float seed = hash(float2(id, 4.0));
+    float angle = id * 2.39996 + t * (0.24 + seed * 0.35);
+    float orbit = radius + 0.07 + seed * 0.19;
+    float2 point = float2(cos(angle), sin(angle)) * orbit;
+    float dist = length(p - point);
+    float twinkle = 0.4 + 0.6 * pow(0.5 + 0.5 * sin(t * 2.0 + id), 3.0);
+    col += ice * exp(-dist * dist / 0.000024) * twinkle * uBusy * 1.2;
+    col += mint * exp(-dist * dist / 0.00050) * twinkle * uBusy * 0.11;
+  }
+
+  if (uPhase > 1.5 && uPhase < 2.5) {
+    float age = min(uAge, 1.5);
+    float waveRadius = radius + age * 0.27;
+    float wave = band(r - waveRadius, 0.009 + age * 0.014);
+    col += mint * wave * exp(-age * 3.0) * 0.9;
+  }
+  // The button face shares the moving light instead of covering it with a static native gradient.
+  float2 faceLight = float2(-0.155, 0.292) + uTilt * 0.24
+    + float2(cos(lightAngle), sin(lightAngle)) * 0.055;
+  float faceShade = smoothstep(0.0, 0.73, length(p - faceLight));
+  float3 faceTop = mix(float3(0.161, 0.298, 0.290), float3(0.208, 0.373, 0.322), uPower);
+  float3 faceMiddle = mix(float3(0.071, 0.176, 0.192), float3(0.086, 0.227, 0.212), uPower);
+  float3 faceBottom = mix(float3(0.051, 0.133, 0.161), float3(0.063, 0.169, 0.188), uPower);
+  float3 face = mix(faceTop, faceMiddle, smoothstep(0.0, 0.55, faceShade));
+  face = mix(face, faceBottom, smoothstep(0.55, 1.0, faceShade));
+  float interior = 1.0 - smoothstep(0.425, 0.435, r);
+  col = mix(col, face, interior);
+  float opacity = 1.0 - smoothstep(0.88, 1.0, length(rawPosition));
+  return half4(half3(clamp(col, 0.0, 1.0) * opacity), half(opacity));
+}

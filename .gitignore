@@ -1,0 +1,8 @@
+.local/
+ios/Frameworks/
+**/xcuserdata/
+*.ipa
+*.mobileprovision
+*.p8
+*.p12
+.DS_Store

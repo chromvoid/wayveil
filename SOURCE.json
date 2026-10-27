@@ -1,0 +1,23 @@
+{
+  "application": "Wayveil",
+  "platform": "iOS",
+  "version": "0.1.0",
+  "build": "2",
+  "source_tag": "ios-v0.1.0-build.2",
+  "bundle_identifier": "com.chromvoid.vpn",
+  "sing_box_version": "1.14.4",
+  "sing_box_commit": "c005f35300ce76427dc285481ec5695f5b179cd2",
+  "sing_box_modified": false,
+  "go": "1.27.3",
+  "gomobile": "0.1.12",
+  "xcode": "27.0",
+  "xcodegen": "2.46.0",
+  "core_build_tags": [
+    "with_quic",
+    "with_gvisor",
+    "tfogo_checklinkname0"
+  ],
+  "original_ipa_sha256": "39e04f7349d9afb60bddb35f111274f4b98876d42c6bf26366fe78530a74f1e8",
+  "original_host_executable_sha256": "ed055d6be29bff09a2a3582e14830e4ddfed8af8633436a07aab1dfc57f82d76",
+  "original_tunnel_executable_sha256": "cf3d75fe7a989e41f9b2a9a6b2beddc592d2435042f71080486554cd02d473e5"
+}
