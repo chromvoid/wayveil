@@ -2,12 +2,12 @@
   "application": "Wayveil",
   "platform": "iOS",
   "version": "0.1.0",
-  "build": "3",
-  "source_tag": "ios-v0.1.0-build.3",
+  "build": "4",
+  "source_tag": "ios-v0.1.0-build.4",
   "bundle_identifier": "com.chromvoid.vpn",
   "sing_box_version": "1.14.4",
   "sing_box_commit": "c005f35300ce76427dc285481ec5695f5b179cd2",
-  "sing_box_modified": false,
+  "sing_box_modified": true,
   "go": "1.27.3",
   "gomobile": "0.1.12",
   "xcode": "27.0",
@@ -17,7 +17,11 @@
     "with_gvisor",
     "tfogo_checklinkname0"
   ],
-  "original_ipa_sha256": "019dc70c1a3f53a6320c0d6705b43c745dfe29aed0b804de6bb9be4824453be3",
-  "original_host_executable_sha256": "dca2612d653b316732b86418efb02bde00fd3904be27b94925d2c4730f539e5b",
-  "original_tunnel_executable_sha256": "42dd957ce660fa733a0110758afba5fccb0a30e57f75e4f77da2bfcb112bac54"
+  "sing_box_patch": "patches/sing-box/0001-disable-anytls.patch",
+  "sing_box_patch_sha256": "f3e39600ea31ea97c8d7a0e531d248765d4458c8398f113b5140ac16e257cbb2",
+  "sing_box_modified_date": "2026-10-27",
+  "sing_box_modification": "Remove unused AnyTLS import and inbound/outbound registrations; retain Hysteria2",
+  "original_ipa_sha256": "9b8878a195013c05ed25c9c4a4b699cc38690384d17d600f90e02bfd82abed29",
+  "original_host_executable_sha256": "e63539beb3c865be85bd7b26b63c6b235820d6f866e54369b17301f1ae6c82cc",
+  "original_tunnel_executable_sha256": "f6cc4da3c873266b2cbf895048d4785d64c1b24c6210823d977fd6e2eabd0aea"
 }

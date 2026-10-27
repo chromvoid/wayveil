@@ -870,29 +870,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ========================================================================
-github.com/anytls/sing-anytls v0.0.11
-
-LICENSE
-sing-anytls
-
-Copyright (C) 2025 anytls <github.com/anytls>
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-
-
-========================================================================
 github.com/caddyserver/certmagic v0.25.3-0.20260421143802-60d9d8b415d6
 
 LICENSE.txt
@@ -4503,6 +4480,7 @@ SOFTWARE.
 
 ========================================================================
 github.com/sagernet/sing-box v1.14.4 (c005f35300ce76427dc285481ec5695f5b179cd2)
+Modified by ChromVoid LLC on 2026-10-27: unused AnyTLS registration removed.
 
 LICENSE
 Copyright (C) 2022 by nekohasekai <contact-sagernet@sekai.icu>
