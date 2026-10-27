@@ -1,6 +1,7 @@
 import Foundation
 import Darwin
-import Libbox
+import HevSocks5Tunnel
+import WayveilCore
 import XCTest
 
 final class ProfileTests: XCTestCase {
@@ -38,63 +39,83 @@ final class ProfileTests: XCTestCase {
         XCTAssertThrowsError(try ConnectionProfile.parse("{\"server\":\"vpn.example.com\",\"password\":\"pw\",\"version\":true}"))
     }
 
-    func testStrictTLSAndBothAddressFamilies() throws {
+    func testCoreAcceptsBothRoutingModesWithoutChangingProfile() throws {
         let profile = try ConnectionProfile.parse(link)
-        let config = try object(TunnelConfiguration.make(profile: profile, routing: .all))
-        let inbounds = try XCTUnwrap(config["inbounds"] as? [[String: Any]])
-        XCTAssertEqual(inbounds[0]["address"] as? [String], ["172.19.0.1/30", "fdfe:dcba:9876::1/126"])
-        let outbounds = try XCTUnwrap(config["outbounds"] as? [[String: Any]])
-        let tls = try XCTUnwrap(outbounds[0]["tls"] as? [String: Any])
-        XCTAssertNil(tls["insecure"])
-        XCTAssertEqual(tls["server_name"] as? String, "gateway.example.com")
-        XCTAssertEqual(outbounds[1]["url"] as? String, "https://1.1.1.1/cdn-cgi/trace")
-    }
-
-    func testRussianDomainsUseFakeIPWithoutPublicIPBypass() throws {
-        let config = try object(TunnelConfiguration.make(profile: ConnectionProfile.parse(link), routing: .russianDirect))
-        let dns = try XCTUnwrap(config["dns"] as? [String: Any])
-        let servers = try XCTUnwrap(dns["servers"] as? [[String: Any]])
-        XCTAssertTrue(servers.contains { $0["type"] as? String == "fakeip" })
-        let route = try XCTUnwrap(config["route"] as? [String: Any])
-        let rules = try XCTUnwrap(route["rules"] as? [[String: Any]])
-        XCTAssertTrue(rules.contains { $0["domain_suffix"] as? [String] == TunnelConfiguration.russianDomains })
-        XCTAssertFalse(rules.contains { $0["ip_cidr"] != nil })
-    }
-
-    func testCoreCommandSocketUnderLongContainerPath() throws {
-        let files = FileManager.default
-        let directory = files.temporaryDirectory.appendingPathComponent(UUID().uuidString)
-            .appendingPathComponent(String(repeating: "container", count: 16))
-        try files.createDirectory(at: directory, withIntermediateDirectories: true)
-        let previousDirectory = files.currentDirectoryPath
-        let previousStderr = dup(STDERR_FILENO)
-        defer {
-            if previousStderr >= 0 { dup2(previousStderr, STDERR_FILENO); close(previousStderr) }
-            _ = files.changeCurrentDirectoryPath(previousDirectory)
-            try? files.removeItem(at: directory.deletingLastPathComponent())
+        for routing in RoutingMode.allCases {
+            let config = try TunnelConfiguration.make(profile: profile, routing: routing)
+            let envelope = try object(config)
+            let encodedProfile = try XCTUnwrap(envelope["profile"] as? [String: Any])
+            let restored = try ConnectionProfile.parse(String(decoding: JSONSerialization.data(withJSONObject: encodedProfile), as: UTF8.self))
+            XCTAssertEqual(restored, profile)
+            var error: NSError?
+            XCTAssertTrue(MobileValidate(config, &error))
+            XCTAssertNil(error)
         }
-        let options = LibboxSetupOptions()
-        options.basePath = directory.path; options.workingPath = directory.path; options.tempPath = directory.path
-        options.crashReportSource = "unit-test"
+    }
+
+    func testCoreRejectsUnknownRoutingWithoutEchoingCredentials() throws {
+        var config = try object(TunnelConfiguration.make(profile: ConnectionProfile.parse(link), routing: .all))
+        config["routing"] = "UNKNOWN"
+        let json = String(decoding: try JSONSerialization.data(withJSONObject: config), as: UTF8.self)
         var error: NSError?
-        XCTAssertTrue(LibboxSetup(options, &error)); XCTAssertNil(error)
-        XCTAssertTrue(LibboxCheckConfig(try TunnelConfiguration.make(profile: ConnectionProfile.parse(link), routing: .all), &error))
-        XCTAssertNil(error)
-        let longServer = try XCTUnwrap(LibboxNewCommandServer(nil, nil, &error))
-        XCTAssertNil(error)
-        XCTAssertThrowsError(try longServer.start()) { failure in
-            XCTAssertTrue(failure.localizedDescription.contains("listen command server"))
-        }
-        longServer.close()
+        XCTAssertFalse(MobileValidate(json, &error))
+        let failure = try XCTUnwrap(error)
+        XCTAssertFalse(failure.localizedDescription.contains("user:p+ass"))
+        XCTAssertFalse(failure.localizedDescription.contains("mask+word"))
+    }
 
-        XCTAssertTrue(files.changeCurrentDirectoryPath(directory.path))
-        options.basePath = "."
-        XCTAssertTrue(LibboxSetup(options, &error)); XCTAssertNil(error)
-        let relativeServer = try XCTUnwrap(LibboxNewCommandServer(nil, nil, &error))
-        defer { relativeServer.close() }
-        XCTAssertNil(error)
-        try relativeServer.start()
-        XCTAssertTrue(files.fileExists(atPath: directory.appendingPathComponent("command.sock").path))
+    func testCoreRejectsAnInvalidPinnedCertificate() throws {
+        var config = try object(TunnelConfiguration.make(profile: ConnectionProfile.parse(link), routing: .all))
+        var profile = try XCTUnwrap(config["profile"] as? [String: Any])
+        profile["certificate"] = "invalid-certificate"
+        config["profile"] = profile
+        let json = String(decoding: try JSONSerialization.data(withJSONObject: config), as: UTF8.self)
+        var error: NSError?
+        XCTAssertFalse(MobileValidate(json, &error))
+        XCTAssertNotNil(error)
+    }
+
+    func testHEVEarlyStopAndRestartPreserveBorrowedDescriptors() throws {
+        let configuration = """
+        tunnel:
+          mtu: 1400
+          ipv4: 172.19.0.1
+          ipv6: 'fdfe:dcba:9876::1'
+        socks5:
+          address: 127.0.0.1
+          port: 1
+          udp: 'udp'
+        misc:
+          log-file: '/dev/null'
+          task-stack-size: 24576
+          tcp-buffer-size: 4096
+          max-session-count: 16
+        """
+        for _ in 0..<5 {
+            var descriptors: [Int32] = [-1, -1]
+            XCTAssertEqual(socketpair(AF_UNIX, SOCK_DGRAM, 0, &descriptors), 0)
+            guard descriptors.allSatisfy({ $0 >= 0 }) else { return }
+            let finished = DispatchGroup()
+            let descriptor = descriptors[1]
+            let bridgeDescriptor = descriptors[0]
+            hev_socks5_tunnel_reset()
+            finished.enter()
+            DispatchQueue.global().async {
+                let result = Array(configuration.utf8).withUnsafeBufferPointer {
+                    hev_socks5_tunnel_main_from_str($0.baseAddress, UInt32($0.count), descriptor)
+                }
+                XCTAssertEqual(result, 0)
+                XCTAssertGreaterThanOrEqual(fcntl(descriptor, F_GETFD), 0)
+                Darwin.close(descriptor)
+                Darwin.close(bridgeDescriptor)
+                finished.leave()
+            }
+            hev_socks5_tunnel_quit()
+            guard finished.wait(timeout: .now() + 5) == .success else {
+                XCTFail("HEV did not stop after an early cancellation.")
+                return
+            }
+        }
     }
 
     private func object(_ string: String) throws -> [String: Any] {

@@ -1,0 +1,17 @@
+diff --git a/src/hev-socks5-tunnel.c b/src/hev-socks5-tunnel.c
+--- a/src/hev-socks5-tunnel.c
++++ b/src/hev-socks5-tunnel.c
+@@ -855,0 +856,6 @@
++hev_socks5_tunnel_reset (void)
++{
++    atomic_fetch_and (&tsync, ~SYNC_STOP);
++}
++
++void
+diff --git a/src/hev-main.h b/src/hev-main.h
+--- a/src/hev-main.h
++++ b/src/hev-main.h
+@@ -71,0 +72,3 @@
++/* Clear a previous stop request only after the previous worker has joined. */
++void hev_socks5_tunnel_reset (void);
++

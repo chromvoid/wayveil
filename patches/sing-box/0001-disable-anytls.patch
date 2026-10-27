@@ -1,9 +1,0 @@
-diff --git a/include/registry.go b/include/registry.go
---- a/include/registry.go
-+++ b/include/registry.go
-@@ -22 +21,0 @@ import (
--	"github.com/sagernet/sing-box/protocol/anytls"
-@@ -71 +69,0 @@ func InboundRegistry() *inbound.Registry {
--	anytls.RegisterInbound(registry)
-@@ -102 +99,0 @@ func OutboundRegistry() *outbound.Registry {
--	anytls.RegisterOutbound(registry)

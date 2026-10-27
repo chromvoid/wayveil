@@ -1,27 +1,63 @@
 {
   "application": "Wayveil",
-  "platform": "iOS",
+  "platforms": [
+    "iOS",
+    "Android"
+  ],
   "version": "0.1.0",
-  "build": "4",
-  "source_tag": "ios-v0.1.0-build.4",
-  "bundle_identifier": "com.chromvoid.vpn",
-  "sing_box_version": "1.14.4",
-  "sing_box_commit": "c005f35300ce76427dc285481ec5695f5b179cd2",
-  "sing_box_modified": true,
+  "build": "5",
+  "source_tag": "ios-v0.1.0-build.5",
+  "ios": {
+    "version": "0.1.0",
+    "build": "5",
+    "bundle_identifier": "com.chromvoid.vpn"
+  },
+  "android": {
+    "version": "0.1.0",
+    "version_code": 3,
+    "application_id": "com.chromvoid.wayveil"
+  },
+  "hysteria": {
+    "repository": "https://github.com/chromvoid/hysteria",
+    "branch": "wayveil-mobile",
+    "commit": "ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62",
+    "upstream_base": "ca8fbd874fd6ca82413948de6dc5924405e103e1",
+    "modified": true,
+    "source": "third_party/hysteria",
+    "app_vendor_local_replacements": [
+      "github.com/apernet/hysteria/core/v2 => ../core",
+      "github.com/apernet/hysteria/extras/v2 => ../extras"
+    ]
+  },
+  "hev": {
+    "repository": "https://github.com/heiher/hev-socks5-tunnel",
+    "commit": "55cc2efc280f3a72ffc60ce856772b57f5122e9c",
+    "source": "third_party/hev",
+    "submodules": {
+      "src/core": "dadbb54bf7509f6dea3c1b30e45198efa400679c",
+      "third-part/hev-task-system": "d0365c370aadd39129924b563b80751cb63332d7",
+      "third-part/lwip": "495671e59d736ef59f6cfa7dc9d35b7359921062",
+      "third-part/yaml": "94441ec8777eb319936735a58b376963d09c73d4"
+    },
+    "modified": true,
+    "patch": "native/hev/hev-reset-stop.patch",
+    "patch_sha256": "c54bea5ad12ce314070b9bb1588d248c2be603ba488cc00898e6d1e1c9d81066",
+    "patch_already_applied": true,
+    "excluded_unused_subtree": "third-part/wintun",
+    "android_jni": "native/hev/hev-jni.c",
+    "upstream_application_jni_excluded": true
+  },
   "go": "1.27.3",
   "gomobile": "0.1.12",
   "xcode": "27.0",
   "xcodegen": "2.46.0",
-  "core_build_tags": [
-    "with_quic",
-    "with_gvisor",
-    "tfogo_checklinkname0"
-  ],
-  "sing_box_patch": "patches/sing-box/0001-disable-anytls.patch",
-  "sing_box_patch_sha256": "f3e39600ea31ea97c8d7a0e531d248765d4458c8398f113b5140ac16e257cbb2",
-  "sing_box_modified_date": "2026-10-27",
-  "sing_box_modification": "Remove unused AnyTLS import and inbound/outbound registrations; retain Hysteria2",
-  "original_ipa_sha256": "9b8878a195013c05ed25c9c4a4b699cc38690384d17d600f90e02bfd82abed29",
-  "original_host_executable_sha256": "e63539beb3c865be85bd7b26b63c6b235820d6f866e54369b17301f1ae6c82cc",
-  "original_tunnel_executable_sha256": "f6cc4da3c873266b2cbf895048d4785d64c1b24c6210823d977fd6e2eabd0aea"
+  "android_sdk": 36,
+  "android_ndk": "29.0.13846066",
+  "gradle": "9.4.1",
+  "original_ipa_distribution": "release-testing; not uploaded to App Store Connect",
+  "original_ipa_sha256": "2ddcdb82e53993aa29011f2f9e2467f3bac2197c072ef9a218af7bc77dd86ced",
+  "original_host_executable_sha256": "e75cc59c64da7b23a651fc7d8b77d26a78a4e7ddcb3ab14880f4cc180640d88d",
+  "original_tunnel_executable_sha256": "962bd944964bb458e96de2d924457c9df648bf37b48e56b938cfbc2758eec62c",
+  "signed_ios_go_runtime_modules_including_app": 21,
+  "first_party_license": "GPL-3.0-or-later"
 }

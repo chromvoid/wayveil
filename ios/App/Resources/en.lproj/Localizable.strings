@@ -36,7 +36,7 @@
 "cancel" = "Cancel";
 "close" = "Close";
 "about" = "About Wayveil";
-"about_body" = "Wayveil %1$@\nNetworking: sing-box %2$@\n\nA personal VPN client with no advertising or analytics. Connection profiles are stored in this device’s Keychain and are not synced to iCloud.";
+"about_body" = "Wayveil %1$@\nNetworking: %2$@\n\nA personal VPN client with no advertising or analytics. Connection profiles are stored in this device’s Keychain and are not synced to iCloud.";
 "licenses" = "Open source licenses";
 "source_code" = "Source code for this version";
 "privacy_policy" = "Privacy policy";

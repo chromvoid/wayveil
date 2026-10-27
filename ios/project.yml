@@ -10,7 +10,7 @@ settings:
     TARGETED_DEVICE_FAMILY: '1,2'
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: '0.1.0'
-    CURRENT_PROJECT_VERSION: '4'
+    CURRENT_PROJECT_VERSION: '5'
     GENERATE_INFOPLIST_FILE: NO
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 targets:
@@ -44,9 +44,12 @@ targets:
         APPLICATION_EXTENSION_API_ONLY: YES
         OTHER_LDFLAGS: ['$(inherited)', '-ObjC', '-lresolv']
     dependencies:
-      - framework: Frameworks/Libbox.xcframework
+      - framework: Frameworks/WayveilCore.xcframework
+        embed: false
+      - framework: Frameworks/HevSocks5Tunnel.xcframework
         embed: false
       - sdk: UIKit.framework
+      - sdk: Network.framework
   ProfileTests:
     type: bundle.unit-test
     platform: iOS
@@ -57,7 +60,9 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         OTHER_LDFLAGS: ['$(inherited)', '-ObjC', '-lresolv']
     dependencies:
-      - framework: Frameworks/Libbox.xcframework
+      - framework: Frameworks/WayveilCore.xcframework
+        embed: false
+      - framework: Frameworks/HevSocks5Tunnel.xcframework
         embed: false
       - sdk: UIKit.framework
       - sdk: Network.framework
