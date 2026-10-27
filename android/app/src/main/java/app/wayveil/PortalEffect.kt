@@ -1,5 +1,6 @@
 package app.wayveil
 
+import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.RuntimeShader
 import android.graphics.Shader
@@ -10,6 +11,8 @@ import android.hardware.SensorManager
 import android.os.Build
 import android.os.SystemClock
 import android.view.Surface
+import androidx.annotation.Keep
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Canvas
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -66,12 +69,9 @@ internal fun PortalEffect(phase: TunnelPhase, buttonDiameter: Dp, logoBounds: Re
     }
     val logoImage = remember(logo) { logo.asImageBitmap() }
     val logoLayerPaint = remember { Paint() }
-    val shader = remember(logo) {
-        if (Build.VERSION.SDK_INT >= 33) RuntimeShader(context.assets.open("portal.agsl").bufferedReader().use { it.readText() }).apply {
-            val mask = BitmapShader(logo, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
-            mask.setFilterMode(BitmapShader.FILTER_MODE_LINEAR)
-            setInputShader("uLogoMask", mask)
-        }
+    val shader: Shader? = remember(logo) {
+        if (Build.VERSION.SDK_INT >= 33) PortalShaderApi33.create(
+            context.assets.open("portal.agsl").bufferedReader().use { it.readText() }, logo)
         else null
     }
     val brush = remember(shader) {
@@ -182,15 +182,7 @@ internal fun PortalEffect(phase: TunnelPhase, buttonDiameter: Dp, logoBounds: Re
 
     Canvas(modifier) {
         if (Build.VERSION.SDK_INT >= 33 && shader != null && brush != null) {
-            shader.setFloatUniform("uResolution", size.width, size.height)
-            shader.setFloatUniform("uTilt", tiltX, tiltY)
-            shader.setFloatUniform("uLogoRect", logoBounds.left, logoBounds.top, logoBounds.width, logoBounds.height)
-            shader.setFloatUniform("uScale", size.minDimension * .43f / diameter)
-            shader.setFloatUniform("uTime", time)
-            shader.setFloatUniform("uPower", power)
-            shader.setFloatUniform("uBusy", busy)
-            shader.setFloatUniform("uAge", age)
-            shader.setFloatUniform("uPhase", when (phase) {
+            PortalShaderApi33.update(shader, size, logoBounds, diameter, tiltX, tiltY, time, power, busy, age, when (phase) {
                 TunnelPhase.CONNECTED -> 2f
                 TunnelPhase.STOPPING -> 3f
                 else -> if (connecting) 1f else 0f
@@ -238,5 +230,30 @@ internal fun PortalEffect(phase: TunnelPhase, buttonDiameter: Dp, logoBounds: Re
                 drawContext.canvas.restore()
             }
         }
+    }
+}
+
+// Preserve the API boundary when R8 optimizes Compose lambdas used on older Android.
+@Keep
+@RequiresApi(33)
+private object PortalShaderApi33 {
+    fun create(source: String, logo: Bitmap): Shader = RuntimeShader(source).apply {
+        val mask = BitmapShader(logo, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+        mask.setFilterMode(BitmapShader.FILTER_MODE_LINEAR)
+        setInputShader("uLogoMask", mask)
+    }
+
+    fun update(shader: Shader, size: Size, logoBounds: Rect, diameter: Float, tiltX: Float, tiltY: Float,
+               time: Float, power: Float, busy: Float, age: Float, phase: Float) {
+        shader as RuntimeShader
+        shader.setFloatUniform("uResolution", size.width, size.height)
+        shader.setFloatUniform("uTilt", tiltX, tiltY)
+        shader.setFloatUniform("uLogoRect", logoBounds.left, logoBounds.top, logoBounds.width, logoBounds.height)
+        shader.setFloatUniform("uScale", size.minDimension * .43f / diameter)
+        shader.setFloatUniform("uTime", time)
+        shader.setFloatUniform("uPower", power)
+        shader.setFloatUniform("uBusy", busy)
+        shader.setFloatUniform("uAge", age)
+        shader.setFloatUniform("uPhase", phase)
     }
 }

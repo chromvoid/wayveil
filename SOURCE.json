@@ -1,20 +1,22 @@
 {
   "application": "Wayveil",
+  "release_platform": "Android",
   "platforms": [
     "iOS",
     "Android"
   ],
   "version": "0.1.0",
-  "build": "5",
-  "source_tag": "ios-v0.1.0-build.5",
+  "build": "4",
+  "source_tag": "android-v0.1.0-build.4",
   "ios": {
     "version": "0.1.0",
     "build": "5",
     "bundle_identifier": "com.chromvoid.vpn"
   },
+  "ios_source_status": "Unchanged base build-5 sources; no new iOS binary produced or included",
   "android": {
     "version": "0.1.0",
-    "version_code": 3,
+    "version_code": 4,
     "application_id": "com.chromvoid.wayveil"
   },
   "hysteria": {

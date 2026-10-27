@@ -6,9 +6,10 @@ This repository contains both clients, their networking sources, the native inte
 
 ## Source version
 
-- iOS: 0.1.0, build 5; bundle identifier `com.chromvoid.vpn`.
-- Android: 0.1.0, version code 3; application ID `com.chromvoid.wayveil`.
-- Source tag: `ios-v0.1.0-build.5`; this shared snapshot also contains the Android version identified above.
+- iOS: unchanged base sources for 0.1.0, build 5; bundle identifier `com.chromvoid.vpn`. No new iOS binary is included in this Android source release.
+- Android: 0.1.0, version code 4; application ID `com.chromvoid.wayveil`.
+- Source tag: `android-v0.1.0-build.4`, based on `ios-v0.1.0-build.5` at commit `b6d0009ef00611afedb9d3ec88d51c0029bf03f7`. The iOS build-5 sources are retained only as the unchanged base snapshot.
+- Android build 4 isolates Android 13 `RuntimeShader` APIs from the Android 10 Canvas fallback to address API-29 startup class loading; the Android 13+ shader path is preserved.
 - Hysteria: [ChromVoid mobile fork](https://github.com/chromvoid/hysteria/tree/ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62), branch `wayveil-mobile`, commit `ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62`, based on upstream `ca8fbd874fd6ca82413948de6dc5924405e103e1`. The complete fork is included under `third_party/hysteria`.
 - HEV: commit `55cc2efc280f3a72ffc60ce856772b57f5122e9c`, with four pinned submodules expanded under `third_party/hev`. The ChromVoid lifecycle patch `native/hev/hev-reset-stop.patch` is already applied. The Android integration uses only the JNI adapter in `native/hev`, excluding HEV's original application adapter. Exact pins and hashes are recorded in `SOURCE.json`.
 - Go dependencies and gomobile v0.1.12 tool/runtime sources are included under `third_party/hysteria/app/vendor`, with original licenses and `vendor/modules.txt`. The app module keeps local replacements for the modified core and extras modules; its vendored copies preserve those changes.
@@ -55,6 +56,6 @@ Source publication and permissive networking dependencies do not constitute blan
 
 ## Links
 
-- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.5)
+- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/android-v0.1.0-build.4)
 - [Privacy](https://link.chromvoid.com/privacy)
 - [Support](https://link.chromvoid.com/support)
