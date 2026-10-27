@@ -13,14 +13,8 @@ struct PortalButton: View {
     let phase: TunnelPhase
     let enabled: Bool
     let action: () -> Void
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.scenePhase) private var scenePhase
     @ScaledMetric(relativeTo: .body) private var scaledDiameter = 164.0
-    @State private var started = Date()
-    @State private var motionPhase: TunnelPhase = .disconnected
-    @State private var initialPower = 0.0
-    @State private var initialBusy = 0.0
-    @State private var initialTime = 0.0
     @State private var logoBounds = CGRect.zero
     private var connected: Bool { phase == .connected }
     private var diameter: CGFloat { min(236, scaledDiameter) }
@@ -33,13 +27,8 @@ struct PortalButton: View {
                 Circle().stroke(Brand.mint.opacity(0.12), lineWidth: 1)
                     .frame(width: buttonDiameter * 1.37, height: buttonDiameter * 1.37)
                     .accessibilityHidden(true)
-                TimelineView(.animation(minimumInterval: 1 / 60, paused: reduceMotion || scenePhase != .active)) { context in
-                    let frame = sample(context.date)
-                    PortalEffect(time: Float(frame.time), power: Float(frame.power), busy: Float(frame.busy),
-                                 age: Float(frame.age), phase: phase, buttonDiameter: buttonDiameter,
-                                 logoBounds: logoBounds, active: scenePhase == .active)
-                        .allowsHitTesting(false).accessibilityHidden(true)
-                }
+                PortalEffect(phase: phase, buttonDiameter: buttonDiameter, logoBounds: logoBounds, active: scenePhase == .active)
+                    .allowsHitTesting(false).accessibilityHidden(true)
                 Button(action: action) {
                     VStack(spacing: 8) {
                         Color.clear.frame(width: buttonDiameter * 0.38, height: buttonDiameter * 0.38)
@@ -67,23 +56,6 @@ struct PortalButton: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .frame(height: diameter + 128)
-        .task(id: phase) {
-            let current = sample(Date())
-            initialPower = current.power; initialBusy = current.busy; initialTime = current.time
-            started = Date(); motionPhase = phase
-        }
-    }
-
-    private func sample(_ date: Date) -> (time: Double, power: Double, busy: Double, age: Double) {
-        let elapsed = reduceMotion ? 10 : max(0, date.timeIntervalSince(started))
-        let blend = reduceMotion ? 1 : 1 - exp(-elapsed * 7)
-        let targetPower = motionPhase == .connected ? 1.0 : 0.0
-        let targetBusy = motionPhase == .connecting || motionPhase == .reconnecting ? 1.0 : 0.0
-        let power = initialPower + (targetPower - initialPower) * blend
-        let activity = initialBusy + (targetBusy - initialBusy) * blend
-        let speed = motionPhase == .reconnecting ? 0.75 : 1.0
-        let time = reduceMotion ? 0 : initialTime + elapsed * (0.28 + activity * 0.72) * speed
-        return (time, power, activity, elapsed)
     }
 }
 

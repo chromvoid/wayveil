@@ -5,21 +5,46 @@
     "Android"
   ],
   "version": "0.1.0",
-  "build": "6",
-  "source_tag": "ios-v0.1.0-build.6",
+  "build": "7",
+  "source_tag": "ios-v0.1.0-build.7",
   "ios": {
     "version": "0.1.0",
-    "build": "6",
-    "bundle_identifier": "com.chromvoid.vpn"
+    "build": "7",
+    "bundle_identifier": "com.chromvoid.vpn",
+    "original_ipa_distribution": "app-store-connect export; upload and review submission are separate publisher actions",
+    "hysteria_commit": "381bdbb6ec1d5936bdc6b7471a5da3d777452e0c",
+    "hysteria_vcs_clean": true
   },
   "android": {
     "version": "0.1.0",
-    "version_code": 3,
+    "version_code": 5,
     "application_id": "com.chromvoid.wayveil",
-    "corresponding_existing_binary_source_tag": "ios-v0.1.0-build.5",
-    "existing_binary_hysteria_commit": "ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62",
-    "client_source_unchanged_from_build5_snapshot": true,
-    "new_binary_built_or_tested_for_source6": false
+    "source_tag": "ios-v0.1.0-build.7",
+    "new_binary_validation": "debug and unsigned release/R8 builds, 15 existing JVM tests and lint passed",
+    "shader_runtime_validation": {
+      "result": "passed on final debug APK",
+      "api": 34,
+      "abi": "arm64",
+      "renderer": "SwiftShader",
+      "owned_emulator_removed": true,
+      "scope": "Disconnected UI and AGSL compilation/rendering only; no physical GPU/performance or connected-state visual claim"
+    },
+    "debug_apk_sha256": "94121cae3c5e6508b3bab6f3e55bb31c19da36c3e981a36f71f1a564fc81158e",
+    "unsigned_release_apk_sha256": "90743a23220fcc06e05e00ae43f9727424f5b770fbdfd2be1a043b05bceb88e8",
+    "release_signing_state": "unsigned; not uploaded to Google Play",
+    "tests_passed": 15,
+    "test_failures": 0,
+    "test_errors": 0,
+    "test_skipped": 0,
+    "lint_errors": 0,
+    "lint_warnings": 13,
+    "hysteria_commit": "381bdbb6ec1d5936bdc6b7471a5da3d777452e0c",
+    "hysteria_vcs_clean": true,
+    "runtime_modules_including_app_per_abi": 21,
+    "native_abis": [
+      "arm64-v8a",
+      "x86_64"
+    ]
   },
   "hysteria": {
     "repository": "https://github.com/chromvoid/hysteria",
@@ -59,12 +84,25 @@
   "android_sdk": 36,
   "android_ndk": "29.0.13846066",
   "gradle": "9.4.1",
-  "original_ipa_distribution": "app-store-connect export; upload and review submission are separate publisher actions",
-  "first_party_license": "GPL-3.0-or-later",
-  "original_ipa_sha256": "65ae5470a1c0955c0797454e6c0fd5840a410e7223359690eb39e60bdafb1d0f",
-  "original_host_executable_sha256": "57ccda42ce382ff366f6b8516f76cb6ba8cf9d309316ed9bf1e984617bcec1ba",
-  "original_tunnel_executable_sha256": "178427b6ffe489441e741125961adadd5a45159b00ca749bf0250299e59b6b93",
+  "first_party_license": "MIT",
+  "first_party_copyright": "Copyright (c) 2026 ChromVoid LLC",
+  "private_integration_commit": "4c2e42a12cfab82e9acdb4a8b298754e891392a5",
+  "artifact_verification": "signed iOS build-7 archive/exports and rebuilt Android version-5 packages verified against frozen source",
+  "original_ipa_distribution": "app-store-connect export; source publication, upload, review submission and public release are separate publisher actions",
+  "original_ipa_sha256": "35d6f211c3e248e0716fa6948886eff94ef5ade75d394ed9aede94c22faf8561",
+  "original_host_executable_sha256": "976b5e51821d5e501869c5f1c028679240f21ccf2542c5e60efc930bb44916f1",
+  "original_tunnel_executable_sha256": "7301017e3e79901a406f452bdf9259af2eeaf959956efc20c8ca044a885053b4",
   "signed_ios_go_runtime_modules_including_app": 21,
-  "ios_source_files_frozen_before_archive_and_matched_after_export": 37,
-  "ios_runtime_source_files_frozen_and_matched_after_export": 147
+  "ios_source_files_frozen_before_archive_and_matched_after_export": 39,
+  "ios_runtime_source_files_frozen_and_matched_after_export": 147,
+  "ios_framework_files_frozen_and_matched_after_export": 24,
+  "ios_tests": {
+    "passed": 15,
+    "failures": 0,
+    "skipped": 0,
+    "profile_tests": 8,
+    "portal_motion_tests": 7,
+    "temporary_simulator_removed": true
+  },
+  "physical_build7_tested": false
 }

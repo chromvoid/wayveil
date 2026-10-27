@@ -3,10 +3,6 @@ import CoreMotion
 import SwiftUI
 
 struct PortalEffect: UIViewRepresentable {
-    let time: Float
-    let power: Float
-    let busy: Float
-    let age: Float
     let phase: TunnelPhase
     let buttonDiameter: CGFloat
     let logoBounds: CGRect
@@ -23,7 +19,7 @@ struct PortalEffect: UIViewRepresentable {
         view.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         view.colorPixelFormat = .bgra8Unorm
         view.isPaused = true
-        view.enableSetNeedsDisplay = true
+        view.preferredFramesPerSecond = 60
         view.contentScaleFactor = displayScale
         view.isUserInteractionEnabled = false
         view.delegate = context.coordinator
@@ -36,13 +32,14 @@ struct PortalEffect: UIViewRepresentable {
         renderer.setMotionEnabled(active && !reduceMotion, view: view)
         renderer.buttonDiameter = buttonDiameter
         renderer.logoBounds = logoBounds
-        renderer.uniforms.time = time
-        renderer.uniforms.power = power
-        renderer.uniforms.busy = busy
-        renderer.uniforms.age = age
-        renderer.uniforms.phase = phase == .connected ? 2 : phase == .stopping ? 3 : phase == .connecting || phase == .reconnecting ? 1 : 0
+        renderer.reduceMotion = reduceMotion
+        renderer.observe(phase: phase)
         view.contentScaleFactor = displayScale
-        if active { view.setNeedsDisplay() }
+        // The view's own display link drives the animation, so SwiftUI is not re-evaluated every frame.
+        // Reduced motion draws one still frame on demand instead.
+        view.enableSetNeedsDisplay = reduceMotion
+        view.isPaused = !active || reduceMotion
+        if active && reduceMotion { view.setNeedsDisplay() }
     }
 
     static func dismantleUIView(_ view: MTKView, coordinator: Renderer?) {
@@ -51,16 +48,20 @@ struct PortalEffect: UIViewRepresentable {
         view.releaseDrawables()
     }
 
+    /// Matches PortalUniforms in PortalShader.metal: 80 bytes, tilt at 32, logoRect at 48.
     struct Uniforms {
         var resolution = SIMD2<Float>(repeating: 0)
         var scale: Float = 1
         var time: Float = 0
         var power: Float = 0
         var busy: Float = 0
-        var age: Float = 10
-        var phase: Float = 0
+        var close: Float = 1
+        var impact: Float = 10
         var tilt = SIMD2<Float>(repeating: 0)
+        var split: Float = 0
+        var spin: Float = 0
         var logoRect = SIMD4<Float>(repeating: 0)
+        var spinBlur: Float = 0
     }
 
     final class Renderer: NSObject, MTKViewDelegate {
@@ -68,10 +69,18 @@ struct PortalEffect: UIViewRepresentable {
         private let queue: MTLCommandQueue
         private let pipeline: MTLRenderPipelineState
         private let logoMask: MTLTexture
+        private let lattice: MTLTexture
         private let motion = CMMotionManager()
-        private var reference: CMAttitude?
-        private var orientation: UIInterfaceOrientation = .unknown
+        private var tracker = TiltTracker()
+        private var lastMotion: TimeInterval?
+        private var portal = PortalMotion()
+        private var phase: TunnelPhase = .disconnected
+        private var power: Float?
+        private var busy: Float = 0
+        private var time: Float = 0
+        private var lastFrame: CFTimeInterval?
         var uniforms = Uniforms()
+        var reduceMotion = false
         var buttonDiameter: CGFloat = 164
         var logoBounds = CGRect.zero
         var active = false
@@ -100,6 +109,20 @@ struct PortalEffect: UIViewRepresentable {
                 assertionFailure("Could not create the portal logo texture: \(error)")
                 return nil
             }
+            // The value-noise lattice for PortalShader.metal: one hash per texel with a period of 256 in both axes.
+            // The integer hash keeps shared cell corners identical on every GPU and matches portal.agsl on Android.
+            let latticeDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .r8Unorm, width: 256, height: 256, mipmapped: false)
+            latticeDescriptor.usage = .shaderRead
+            guard let lattice = device.makeTexture(descriptor: latticeDescriptor) else { return nil }
+            let hashes = (0..<256 * 256).map { index -> UInt8 in
+                let x = index % 256
+                let n = (x * 34 + 1) * x % 256 + index / 256
+                return UInt8((n * 34 + 1) * n % 256)
+            }
+            hashes.withUnsafeBytes {
+                lattice.replace(region: MTLRegionMake2D(0, 0, 256, 256), mipmapLevel: 0, withBytes: $0.baseAddress!, bytesPerRow: 256)
+            }
+            self.lattice = lattice
             guard let library = device.makeDefaultLibrary(), let vertex = library.makeFunction(name: "portalVertex"),
                   let fragment = library.makeFunction(name: "portalFragment") else {
                 assertionFailure("The portal Metal library is missing.")
@@ -119,48 +142,44 @@ struct PortalEffect: UIViewRepresentable {
             super.init()
         }
 
+        func observe(phase: TunnelPhase) {
+            self.phase = phase
+            if power == nil {
+                // The first phase is shown settled rather than eased in.
+                power = phase == .connected ? 1 : 0
+                busy = phase == .connecting || phase == .reconnecting ? 1 : 0
+                uniforms.power = power ?? 0
+                uniforms.busy = busy
+            }
+            let lit = phase == .connected || phase == .connecting || phase == .reconnecting
+            if portal.observe(lit: lit, connected: phase == .connected, power: uniforms.power, busy: uniforms.busy, now: CACurrentMediaTime()) {
+                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+            }
+        }
+
         func setMotionEnabled(_ enabled: Bool, view: MTKView) {
             if !enabled {
                 motion.stopDeviceMotionUpdates()
-                reference = nil
+                tracker = TiltTracker()
+                lastMotion = nil
                 uniforms.tilt = .zero
                 return
             }
             guard !motion.isDeviceMotionActive, motion.isDeviceMotionAvailable else { return }
             motion.deviceMotionUpdateInterval = 1 / 60
-            motion.startDeviceMotionUpdates(using: .xArbitraryZVertical, to: .main) { [weak self, weak view] data, _ in
-                guard let self, let view, self.active, self.motion.isDeviceMotionActive, let data,
-                      let attitude = data.attitude.copy() as? CMAttitude else { return }
-                let orientation = view.window?.windowScene?.interfaceOrientation ?? .portrait
-                if self.reference == nil || self.orientation != orientation {
-                    self.reference = data.attitude.copy() as? CMAttitude
-                    self.orientation = orientation
+            motion.startDeviceMotionUpdates(to: .main) { [weak self, weak view] data, _ in
+                guard let self, let view, self.active, self.motion.isDeviceMotionActive, let data else { return }
+                let dt = self.lastMotion.map { Float(data.timestamp - $0) } ?? 0
+                self.lastMotion = data.timestamp
+                let quarterTurns: Int
+                switch view.window?.windowScene?.interfaceOrientation ?? .portrait {
+                case .landscapeRight: quarterTurns = 1
+                case .portraitUpsideDown: quarterTurns = 2
+                case .landscapeLeft: quarterTurns = 3
+                default: quarterTurns = 0
                 }
-                guard let reference = self.reference else { return }
-                attitude.multiply(byInverseOf: reference)
-                let matrix = attitude.rotationMatrix
-                let base: SIMD2<Double>
-                switch orientation {
-                case .landscapeLeft: base = SIMD2(-0.55, -0.35)
-                case .landscapeRight: base = SIMD2(0.55, 0.35)
-                case .portraitUpsideDown: base = SIMD2(0.35, -0.55)
-                default: base = SIMD2(-0.35, 0.55)
-                }
-                let x = Float(matrix.m11 * base.x + matrix.m12 * base.y + matrix.m13 * 0.9)
-                let y = Float(matrix.m21 * base.x + matrix.m22 * base.y + matrix.m23 * 0.9)
-                let screen: SIMD2<Float>
-                switch orientation {
-                case .landscapeLeft: screen = SIMD2(y, -x)
-                case .landscapeRight: screen = SIMD2(-y, x)
-                case .portraitUpsideDown: screen = SIMD2(-x, -y)
-                default: screen = SIMD2(x, y)
-                }
-                let target = (screen - SIMD2(-0.35, 0.55)) * 1.6
-                let bounded = SIMD2(min(1, max(-1, target.x)), min(1, max(-1, target.y)))
-                let next = self.uniforms.tilt + (bounded - self.uniforms.tilt) * 0.0835
-                if abs(next.x - self.uniforms.tilt.x) > 0.001 || abs(next.y - self.uniforms.tilt.y) > 0.001 {
-                    self.uniforms.tilt = next
-                }
+                // The next frame picks the tilt up, so it never asks for a redraw of its own.
+                self.tracker.update(rateX: Float(data.rotationRate.x), rateY: Float(data.rotationRate.y), dt: dt, quarterTurns: quarterTurns)
             }
         }
 
@@ -168,18 +187,66 @@ struct PortalEffect: UIViewRepresentable {
 
         func draw(in view: MTKView) {
             guard active, UIApplication.shared.applicationState == .active,
-                  view.bounds.width > 0, view.bounds.height > 0,
-                  let descriptor = view.currentRenderPassDescriptor, let drawable = view.currentDrawable,
-                  let command = queue.makeCommandBuffer(), let encoder = command.makeRenderCommandEncoder(descriptor: descriptor) else { return }
+                  view.bounds.width > 0, view.bounds.height > 0 else { return }
+            // Scrolled out of view: tick slowly without drawing until the button is back.
+            guard let window = view.window, window.bounds.intersects(view.convert(view.bounds, to: window)) else {
+                if view.preferredFramesPerSecond != 4 { view.preferredFramesPerSecond = 4 }
+                lastFrame = nil
+                return
+            }
+            let now = CACurrentMediaTime()
+            let dt = Float(min(0.05, max(0, now - (lastFrame ?? now))))
+            lastFrame = now
+            let connecting = phase == .connecting || phase == .reconnecting
+            let targetPower: Float = phase == .connected ? 1 : 0
+            let targetBusy: Float = connecting ? 1 : 0
+            var power = self.power ?? targetPower
+            let tilt = tracker.tilt
+            if reduceMotion {
+                portal.settle()
+                power = targetPower
+                busy = targetBusy
+                time = 0
+                uniforms.close = 1
+                uniforms.impact = 10
+                (uniforms.power, uniforms.busy) = (power, busy)
+            } else {
+                let blend = 1 - exp(-dt * 7)
+                power += (targetPower - power) * blend
+                busy += (targetBusy - busy) * blend
+                if abs(targetPower - power) < 0.001 { power = targetPower }
+                if abs(targetBusy - busy) < 0.001 { busy = targetBusy }
+                time += dt * (0.28 + busy * 0.72) * (phase == .reconnecting ? 0.75 : 1)
+                uniforms.close = portal.close(at: now)
+                uniforms.impact = portal.impact(at: now)
+                (uniforms.power, uniforms.busy) = portal.held(power: power, busy: busy, close: uniforms.close)
+                portal.step(dt: dt, connecting: connecting, close: uniforms.close,
+                            speed: phase == .reconnecting ? 0.75 : 1)
+            }
+            self.power = power
+            // Quick motion runs at 60 fps; the slow idle drift looks the same at 30 and costs half.
+            let lively = !reduceMotion && (connecting || uniforms.close < 1 || uniforms.impact < 2
+                || power != targetPower || busy != targetBusy || !portal.settled
+                || abs(tilt.x - uniforms.tilt.x) > 0.005 || abs(tilt.y - uniforms.tilt.y) > 0.005)
+            let framesPerSecond = lively ? 60 : 30
+            if view.preferredFramesPerSecond != framesPerSecond { view.preferredFramesPerSecond = framesPerSecond }
+            uniforms.tilt = reduceMotion ? .zero : tilt
+            uniforms.time = time
+            uniforms.split = portal.split
+            uniforms.spin = portal.spin
+            uniforms.spinBlur = min(0.06, max(-0.06, portal.spinVelocity * 0.035))
             uniforms.resolution = SIMD2(Float(view.drawableSize.width), Float(view.drawableSize.height))
             uniforms.scale = Float(min(view.bounds.width, view.bounds.height) * 0.43 / buttonDiameter)
             let scaleX = Float(view.drawableSize.width / view.bounds.width)
             let scaleY = Float(view.drawableSize.height / view.bounds.height)
             uniforms.logoRect = SIMD4(Float(logoBounds.minX) * scaleX, Float(logoBounds.minY) * scaleY,
                                      Float(logoBounds.width) * scaleX, Float(logoBounds.height) * scaleY)
+            guard let descriptor = view.currentRenderPassDescriptor, let drawable = view.currentDrawable,
+                  let command = queue.makeCommandBuffer(), let encoder = command.makeRenderCommandEncoder(descriptor: descriptor) else { return }
             encoder.setRenderPipelineState(pipeline)
             encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
             encoder.setFragmentTexture(logoMask, index: 0)
+            encoder.setFragmentTexture(lattice, index: 1)
             encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
             encoder.endEncoding()
             command.present(drawable)
