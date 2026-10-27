@@ -6,7 +6,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HYSTERIA="$ROOT/third_party/hysteria"
-HYSTERIA_REVISION=ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62
+HYSTERIA_REVISION=381bdbb6ec1d5936bdc6b7471a5da3d777452e0c
 HEV="$ROOT/third_party/hev"
 HEV_REVISION=55cc2efc280f3a72ffc60ce856772b57f5122e9c
 BUILD="$ROOT/.local/native/hev"

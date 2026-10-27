@@ -166,7 +166,7 @@ private struct AboutView: View {
                         Button(L("licenses")) { licenses = true }
                         Link(L("privacy_policy"), destination: URL(string: "https://link.chromvoid.com/privacy")!)
                             .frame(minHeight: 44)
-                        Link(L("source_code"), destination: URL(string: "https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.5")!)
+                        Link(L("source_code"), destination: URL(string: "https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.6")!)
                     }
                 }.padding(24)
             }

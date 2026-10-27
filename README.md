@@ -6,10 +6,10 @@ This repository contains both clients, their networking sources, the native inte
 
 ## Source version
 
-- iOS: 0.1.0, build 5; bundle identifier `com.chromvoid.vpn`.
-- Android: 0.1.0, version code 3; application ID `com.chromvoid.wayveil`.
-- Source tag: `ios-v0.1.0-build.5`; this shared snapshot also contains the Android version identified above.
-- Hysteria: [ChromVoid mobile fork](https://github.com/chromvoid/hysteria/tree/ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62), branch `wayveil-mobile`, commit `ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62`, based on upstream `ca8fbd874fd6ca82413948de6dc5924405e103e1`. The complete fork is included under `third_party/hysteria`.
+- iOS: 0.1.0, build 6; bundle identifier `com.chromvoid.vpn`.
+- Android client source: 0.1.0, version code 3; application ID `com.chromvoid.wayveil`. It is unchanged from source snapshot `ios-v0.1.0-build.5`. The existing Android build-3 binary uses Hysteria commit `ea9a2940a0b43e4b2f9430e9bdb19b65de2cbc62`; its corresponding full source remains available under that build-5 tag. No new Android binary was built or tested for this iOS release. Rebuilding Android with the newer shared core in this snapshot produces a different binary.
+- Source tag: `ios-v0.1.0-build.6`; this is the iOS build-6 source snapshot, with the unchanged Android client source retained.
+- Hysteria: [ChromVoid mobile fork](https://github.com/chromvoid/hysteria/tree/381bdbb6ec1d5936bdc6b7471a5da3d777452e0c), branch `wayveil-mobile`, commit `381bdbb6ec1d5936bdc6b7471a5da3d777452e0c`, based on upstream `ca8fbd874fd6ca82413948de6dc5924405e103e1`. The complete fork is included under `third_party/hysteria`. The iOS build-6 change resolves physical destination addresses through native `getaddrinfo` with `AF_UNSPEC` and `AI_DEFAULT`, allowing iOS NAT64 synthesis. The profile format and routing modes remain unchanged.
 - HEV: commit `55cc2efc280f3a72ffc60ce856772b57f5122e9c`, with four pinned submodules expanded under `third_party/hev`. The ChromVoid lifecycle patch `native/hev/hev-reset-stop.patch` is already applied. The Android integration uses only the JNI adapter in `native/hev`, excluding HEV's original application adapter. Exact pins and hashes are recorded in `SOURCE.json`.
 - Go dependencies and gomobile v0.1.12 tool/runtime sources are included under `third_party/hysteria/app/vendor`, with original licenses and `vendor/modules.txt`. The app module keeps local replacements for the modified core and extras modules; its vendored copies preserve those changes.
 - The unused Windows `third-part/wintun` subtree and its precompiled DLLs are excluded. Upstream Git ignore files are omitted so vendored source remains visible in this source mirror.
@@ -47,7 +47,7 @@ The Go mobile tests can run independently with `cd third_party/hysteria/app && G
 
 Copyright (C) 2026 ChromVoid LLC for the first-party clients. The clients remain GPL-3.0-or-later; see `LICENSE`. Recipients may use, study, modify and redistribute them under those terms. This migration does not change their license.
 
-The selected networking runtime uses MIT, BSD, and Apache-2.0 components. The signed iOS build-5 packet-tunnel Go inventory contains 21 modules including the Hysteria app module, and no sing-box or AnyTLS module. This statement concerns the selected networking runtime, not every optional server, test, or build-tool package in the complete source inventory. Hysteria and HEV retain their MIT licenses; HEV's lwIP submodule retains its BSD license. Go and gomobile retain their BSD notices. Native integration code is MIT. AndroidX graphics-path is Apache-2.0.
+The selected networking runtime uses MIT, BSD, and Apache-2.0 components. The signed iOS build-6 packet-tunnel Go inventory contains 21 modules including the Hysteria app module, and no sing-box or AnyTLS module. Its clean VCS revision is `381bdbb6ec1d5936bdc6b7471a5da3d777452e0c`; its native resolver and HEV symbols are present. All 37 iOS source files and 147 runtime source inputs match the hashes captured before archiving and after export. Original exported IPA and executable hashes are recorded in `SOURCE.json`. This statement concerns the selected networking runtime, not every optional server, test, or build-tool package in the complete source inventory. Hysteria and HEV retain their MIT licenses; HEV's lwIP submodule retains its BSD license. Go and gomobile retain their BSD notices. Native integration code is MIT. AndroidX graphics-path is Apache-2.0.
 
 Preserve the full notices in `ios/App/Resources/ThirdPartyNotices.txt`, `android/app/src/main/assets/LICENSES.txt`, all licenses under `third_party`, and `native/hev/LICENSE`. The native notices include original libyaml attribution in addition to its fork attribution. Apple/Android SDKs, Xcode, system libraries, the Go compiler, and other generally available build tools are not redistributed here; the Gradle wrapper JAR is included as a build tool.
 
@@ -55,6 +55,6 @@ Source publication and permissive networking dependencies do not constitute blan
 
 ## Links
 
-- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.5)
+- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.6)
 - [Privacy](https://link.chromvoid.com/privacy)
 - [Support](https://link.chromvoid.com/support)
