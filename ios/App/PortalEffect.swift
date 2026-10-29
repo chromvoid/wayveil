@@ -7,6 +7,7 @@ struct PortalEffect: UIViewRepresentable {
     let buttonDiameter: CGFloat
     let logoBounds: CGRect
     let active: Bool
+    let pressed: Bool
     @Environment(\.displayScale) private var displayScale
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -33,6 +34,7 @@ struct PortalEffect: UIViewRepresentable {
         renderer.buttonDiameter = buttonDiameter
         renderer.logoBounds = logoBounds
         renderer.reduceMotion = reduceMotion
+        renderer.pressed = pressed
         renderer.observe(phase: phase)
         view.contentScaleFactor = displayScale
         // The view's own display link drives the animation, so SwiftUI is not re-evaluated every frame.
@@ -48,7 +50,7 @@ struct PortalEffect: UIViewRepresentable {
         view.releaseDrawables()
     }
 
-    /// Matches PortalUniforms in PortalShader.metal: 80 bytes, tilt at 32, logoRect at 48.
+    /// Matches PortalUniforms in PortalShader.metal: 192 bytes, tilt at 32, logoRect at 48, press at 68, packets at 80, light at 176.
     struct Uniforms {
         var resolution = SIMD2<Float>(repeating: 0)
         var scale: Float = 1
@@ -62,6 +64,9 @@ struct PortalEffect: UIViewRepresentable {
         var spin: Float = 0
         var logoRect = SIMD4<Float>(repeating: 0)
         var spinBlur: Float = 0
+        var press: Float = 0
+        var packets = PortalTraffic.packets(at: 0)
+        var light = PortalLight.light(at: 0, tilt: .zero)
     }
 
     final class Renderer: NSObject, MTKViewDelegate {
@@ -78,12 +83,14 @@ struct PortalEffect: UIViewRepresentable {
         private var power: Float?
         private var busy: Float = 0
         private var time: Float = 0
+        private var press: Float = 0
         private var lastFrame: CFTimeInterval?
         var uniforms = Uniforms()
         var reduceMotion = false
         var buttonDiameter: CGFloat = 164
         var logoBounds = CGRect.zero
         var active = false
+        var pressed = false
 
         init?(device: MTLDevice? = MTLCreateSystemDefaultDevice()) {
             guard let device, let queue = device.makeCommandQueue() else { return nil }
@@ -207,6 +214,7 @@ struct PortalEffect: UIViewRepresentable {
                 power = targetPower
                 busy = targetBusy
                 time = 0
+                press = pressed ? 1 : 0
                 uniforms.close = 1
                 uniforms.impact = 10
                 (uniforms.power, uniforms.busy) = (power, busy)
@@ -217,6 +225,9 @@ struct PortalEffect: UIViewRepresentable {
                 if abs(targetPower - power) < 0.001 { power = targetPower }
                 if abs(targetBusy - busy) < 0.001 { busy = targetBusy }
                 time += dt * (0.28 + busy * 0.72) * (phase == .reconnecting ? 0.75 : 1)
+                // The ring gives quickly under the finger and springs back a little slower.
+                press += ((pressed ? 1 : 0) - press) * (1 - exp(-dt * (pressed ? 30 : 12)))
+                if abs((pressed ? 1 : 0) - press) < 0.001 { press = pressed ? 1 : 0 }
                 uniforms.close = portal.close(at: now)
                 uniforms.impact = portal.impact(at: now)
                 (uniforms.power, uniforms.busy) = portal.held(power: power, busy: busy, close: uniforms.close)
@@ -224,17 +235,15 @@ struct PortalEffect: UIViewRepresentable {
                             speed: phase == .reconnecting ? 0.75 : 1)
             }
             self.power = power
-            // Quick motion runs at 60 fps; the slow idle drift looks the same at 30 and costs half.
-            let lively = !reduceMotion && (connecting || uniforms.close < 1 || uniforms.impact < 2
-                || power != targetPower || busy != targetBusy || !portal.settled
-                || abs(tilt.x - uniforms.tilt.x) > 0.005 || abs(tilt.y - uniforms.tilt.y) > 0.005)
-            let framesPerSecond = lively ? 60 : 30
-            if view.preferredFramesPerSecond != framesPerSecond { view.preferredFramesPerSecond = framesPerSecond }
+            if view.preferredFramesPerSecond != 60 { view.preferredFramesPerSecond = 60 }
             uniforms.tilt = reduceMotion ? .zero : tilt
             uniforms.time = time
             uniforms.split = portal.split
             uniforms.spin = portal.spin
             uniforms.spinBlur = min(0.06, max(-0.06, portal.spinVelocity * 0.035))
+            uniforms.press = press
+            uniforms.packets = PortalTraffic.packets(at: time)
+            uniforms.light = PortalLight.light(at: time, tilt: uniforms.tilt)
             uniforms.resolution = SIMD2(Float(view.drawableSize.width), Float(view.drawableSize.height))
             uniforms.scale = Float(min(view.bounds.width, view.bounds.height) * 0.43 / buttonDiameter)
             let scaleX = Float(view.drawableSize.width / view.bounds.width)

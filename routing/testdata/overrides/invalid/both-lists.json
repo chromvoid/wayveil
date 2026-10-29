@@ -1,0 +1,9 @@
+{
+  "format": 1,
+  "direct": [
+    "example.com"
+  ],
+  "proxy": [
+    "example.com"
+  ]
+}

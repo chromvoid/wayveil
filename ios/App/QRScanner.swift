@@ -14,13 +14,13 @@ struct QRScanner: View {
             VStack {
                 HStack { Spacer(); Button(L("close")) { dismiss() }.padding().background(.ultraThinMaterial, in: Capsule()) }
                 Spacer()
-                if allowed { RoundedRectangle(cornerRadius: 24).stroke(Brand.mint, lineWidth: 2).frame(width: 230, height: 230).accessibilityHidden(true) }
+                if allowed { RoundedRectangle(cornerRadius: 24).stroke(Brand.cyan, lineWidth: 2).frame(width: 230, height: 230).accessibilityHidden(true) }
                 if let error { Text(error).multilineTextAlignment(.center).padding(24) }
                 Spacer()
                 Text(L("scan_prompt")).font(.headline).padding(20).background(.ultraThinMaterial, in: Capsule())
             }.padding(24)
         }
-        .preferredColorScheme(.dark).tint(Brand.mint)
+        .preferredColorScheme(.dark).tint(Brand.cyan)
         .task {
             #if targetEnvironment(simulator)
             error = L("camera_unavailable")

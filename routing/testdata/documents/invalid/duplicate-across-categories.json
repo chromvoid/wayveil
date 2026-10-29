@@ -1,0 +1,26 @@
+{
+  "format": 1,
+  "version": 1,
+  "categories": [
+    {
+      "id": "first",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "example.com"
+      ]
+    },
+    {
+      "id": "second",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "example.com"
+      ]
+    }
+  ]
+}

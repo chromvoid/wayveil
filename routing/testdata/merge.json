@@ -1,0 +1,169 @@
+[
+  {
+    "name": "all-without-overrides",
+    "routing": "ALL",
+    "base": {
+      "format": 1,
+      "version": 1,
+      "categories": [
+        {
+          "id": "base",
+          "title": {
+            "ru": "Тест",
+            "en": "Test"
+          },
+          "domain_suffix": [
+            "ru",
+            "vk.com"
+          ],
+          "domain": [
+            "exact.example"
+          ]
+        }
+      ]
+    },
+    "overrides": {
+      "format": 1,
+      "direct": [],
+      "proxy": []
+    },
+    "expected": {
+      "proxy_suffix": [],
+      "direct_suffix": [],
+      "direct_domain": []
+    }
+  },
+  {
+    "name": "all-personal-direct",
+    "routing": "ALL",
+    "base": {
+      "format": 1,
+      "version": 1,
+      "categories": [
+        {
+          "id": "base",
+          "title": {
+            "ru": "Тест",
+            "en": "Test"
+          },
+          "domain_suffix": [
+            "ru",
+            "vk.com"
+          ],
+          "domain": [
+            "exact.example"
+          ]
+        }
+      ]
+    },
+    "overrides": {
+      "format": 1,
+      "direct": [
+        "bank.example"
+      ],
+      "proxy": [
+        "news.example.ru"
+      ]
+    },
+    "expected": {
+      "proxy_suffix": [
+        "news.example.ru"
+      ],
+      "direct_suffix": [
+        "bank.example"
+      ],
+      "direct_domain": []
+    }
+  },
+  {
+    "name": "russian-direct-base-and-overrides",
+    "routing": "RUSSIAN_DIRECT",
+    "base": {
+      "format": 1,
+      "version": 1,
+      "categories": [
+        {
+          "id": "base",
+          "title": {
+            "ru": "Тест",
+            "en": "Test"
+          },
+          "domain_suffix": [
+            "ru",
+            "vk.com"
+          ],
+          "domain": [
+            "exact.example"
+          ]
+        }
+      ]
+    },
+    "overrides": {
+      "format": 1,
+      "direct": [
+        "bank.example"
+      ],
+      "proxy": [
+        "news.example.ru"
+      ]
+    },
+    "expected": {
+      "proxy_suffix": [
+        "news.example.ru"
+      ],
+      "direct_suffix": [
+        "bank.example",
+        "ru",
+        "vk.com"
+      ],
+      "direct_domain": [
+        "exact.example"
+      ]
+    }
+  },
+  {
+    "name": "deduplicate-personal-and-base",
+    "routing": "RUSSIAN_DIRECT",
+    "base": {
+      "format": 1,
+      "version": 1,
+      "categories": [
+        {
+          "id": "base",
+          "title": {
+            "ru": "Тест",
+            "en": "Test"
+          },
+          "domain_suffix": [
+            "ru",
+            "vk.com"
+          ],
+          "domain": [
+            "exact.example"
+          ]
+        }
+      ]
+    },
+    "overrides": {
+      "format": 1,
+      "direct": [
+        "vk.com"
+      ],
+      "proxy": [
+        "news.example.ru"
+      ]
+    },
+    "expected": {
+      "proxy_suffix": [
+        "news.example.ru"
+      ],
+      "direct_suffix": [
+        "vk.com",
+        "ru"
+      ],
+      "direct_domain": [
+        "exact.example"
+      ]
+    }
+  }
+]

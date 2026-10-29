@@ -6,10 +6,10 @@ This repository contains both clients, their networking sources, the native inte
 
 ## Source version
 
-- iOS: 0.1.0, build 7; bundle identifier `com.chromvoid.vpn`.
-- Android: 0.1.0, version code 5; application ID `com.chromvoid.wayveil`. This snapshot contains the current MIT client and its matching source inputs. Historical binaries remain associated with their own source tags; this source release does not replace those artifacts.
-- Source tag: `ios-v0.1.0-build.7`; this snapshot contains both current clients, first-party MIT licensing and the latest C2 Vortex portal design and motion helpers.
-- Hysteria: [ChromVoid mobile fork](https://github.com/chromvoid/hysteria/tree/381bdbb6ec1d5936bdc6b7471a5da3d777452e0c), branch `wayveil-mobile`, commit `381bdbb6ec1d5936bdc6b7471a5da3d777452e0c`, based on upstream `ca8fbd874fd6ca82413948de6dc5924405e103e1`. The complete fork is included under `third_party/hysteria`. Physical destination addresses on iOS resolve through native `getaddrinfo` with `AF_UNSPEC` and `AI_DEFAULT`, allowing iOS NAT64 synthesis. The profile format and routing modes remain unchanged.
+- iOS: 0.1.0, build 8; bundle identifier `com.chromvoid.vpn`.
+- Android: 0.1.1, version code 6; application ID `com.chromvoid.wayveil`. This snapshot contains the current MIT client source; no Android binary is tied to this tag. Historical binaries remain associated with their own source tags; this source release does not replace those artifacts.
+- Source tag: `ios-v0.1.0-build.8`; this snapshot contains both current clients under the Wayveil name, first-party MIT licensing, the shared client routing rules under `routing/` and the current portal design.
+- Hysteria: [ChromVoid mobile fork](https://github.com/chromvoid/hysteria/tree/91d0786404bbaefc491353da2cdf7708f3c37228), branch `wayveil-mobile`, commit `91d0786404bbaefc491353da2cdf7708f3c37228`, based on upstream `ca8fbd874fd6ca82413948de6dc5924405e103e1`. The complete fork is included under `third_party/hysteria`. Physical destination addresses on iOS resolve through native `getaddrinfo` with `AF_UNSPEC` and `AI_DEFAULT`, allowing iOS NAT64 synthesis. The mobile core applies the client routing rules from `routing/default-rules.json`; its decision fixture matches `routing/testdata/decisions.json`.
 - HEV: commit `55cc2efc280f3a72ffc60ce856772b57f5122e9c`, with four pinned submodules expanded under `third_party/hev`. The ChromVoid lifecycle patch `native/hev/hev-reset-stop.patch` is already applied. The Android integration uses only the JNI adapter in `native/hev`, excluding HEV's original application adapter. Exact pins and hashes are recorded in `SOURCE.json`.
 - Go dependencies and gomobile v0.1.12 tool/runtime sources are included under `third_party/hysteria/app/vendor`, with original licenses and `vendor/modules.txt`. The app module keeps local replacements for the modified core and extras modules; its vendored copies preserve those changes.
 - The unused Windows `third-part/wintun` subtree and its precompiled DLLs are excluded. Upstream Git ignore files are omitted so vendored source remains visible in this source mirror.
@@ -22,7 +22,7 @@ The tested toolchain is macOS, Xcode 27.0, XcodeGen 2.46.0, Go 1.27.3, JDK 21, A
 ```sh
 scripts/build-mobile-core.sh
 xcodegen generate --spec ios/project.yml --project ios
-xcodebuild -project ios/ChromVoidVPN.xcodeproj -scheme ChromVoidVPN \
+xcodebuild -project ios/Wayveil.xcodeproj -scheme Wayveil \
   -destination 'generic/platform=iOS Simulator' \
   -derivedDataPath .local/DerivedData CODE_SIGNING_ALLOWED=NO build
 cd android
@@ -36,7 +36,7 @@ For physical iOS devices, select your own paid Apple Developer team for both tar
 To run the existing iOS tests, replace `SIMULATOR_UDID` with an available simulator:
 
 ```sh
-xcodebuild -project ios/ChromVoidVPN.xcodeproj -scheme ChromVoidVPN \
+xcodebuild -project ios/Wayveil.xcodeproj -scheme Wayveil \
   -destination 'platform=iOS Simulator,id=SIMULATOR_UDID' \
   -derivedDataPath .local/DerivedData CODE_SIGNING_ALLOWED=NO test
 ```
@@ -47,7 +47,7 @@ The Go mobile tests can run independently with `cd third_party/hysteria/app && G
 
 Copyright (c) 2026 ChromVoid LLC for the first-party clients, licensed under MIT; see `LICENSE`. Preserve the copyright and permission notice when redistributing substantial portions. The owner authorized this first-party MIT grant for the current release. Historical GPL source tags and binaries remain unchanged.
 
-The networking runtime uses MIT, BSD, and Apache-2.0 components. Its Hysteria fork is pinned to `381bdbb6ec1d5936bdc6b7471a5da3d777452e0c`, including native iOS address resolution and HEV integration. Matching package hashes and bounded build verification are recorded in `SOURCE.json`. The signed iOS build-7 and rebuilt Android version-5 runtime inventories each contain 21 modules with clean Hysteria revision `381bdbb6ec1d5936bdc6b7471a5da3d777452e0c`. Both platforms passed 15 existing unit tests. Android release/R8 and lint checks passed, and its final debug APK rendered the portal on an owned API-34 emulator. The new iOS build was tested on an owned simulator; new physical-device tests and store approvals are not claimed. This statement concerns the selected mobile networking runtime, not every optional server, test, or build-tool package in the complete source inventory. Hysteria and HEV retain their MIT licenses; HEV's lwIP submodule retains its BSD license. Go and gomobile retain their BSD notices. Native integration code is MIT. AndroidX graphics-path is Apache-2.0.
+The networking runtime uses MIT, BSD, and Apache-2.0 components. Its Hysteria fork is pinned to `91d0786404bbaefc491353da2cdf7708f3c37228`, including native iOS address resolution and HEV integration. Matching package hashes and bounded build verification are recorded in `SOURCE.json`. The signed iOS build 8 carries clean Hysteria revision `91d0786404bbaefc491353da2cdf7708f3c37228` and passed 25 existing iOS unit tests on a simulator. New physical-device tests, Android binaries and store approvals are not claimed for this tag. This statement concerns the selected mobile networking runtime, not every optional server, test, or build-tool package in the complete source inventory. Hysteria and HEV retain their MIT licenses; HEV's lwIP submodule retains its BSD license. Go and gomobile retain their BSD notices. Native integration code is MIT. AndroidX graphics-path is Apache-2.0.
 
 Preserve the full notices in `ios/App/Resources/ThirdPartyNotices.txt`, `android/app/src/main/assets/LICENSES.txt`, all licenses under `third_party`, and `native/hev/LICENSE`. The native notices include original libyaml attribution in addition to its fork attribution. Apple/Android SDKs, Xcode, system libraries, the Go compiler, and other generally available build tools are not redistributed here; the Gradle wrapper JAR is included as a build tool.
 
@@ -55,6 +55,6 @@ The first-party MIT grant does not relicense third-party code, change platform a
 
 ## Links
 
-- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.7)
+- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.8)
 - [Privacy](https://link.chromvoid.com/privacy)
 - [Support](https://link.chromvoid.com/support)

@@ -1,0 +1,15 @@
+{
+  "format": 1,
+  "version": 1,
+  "categories": [
+    {
+      "id": "test",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [],
+      "domain": []
+    }
+  ]
+}

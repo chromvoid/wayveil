@@ -1,0 +1,326 @@
+{
+  "format": 1,
+  "version": 1,
+  "categories": [
+    {
+      "id": "category-0",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c0.example"
+      ]
+    },
+    {
+      "id": "category-1",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c1.example"
+      ]
+    },
+    {
+      "id": "category-2",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c2.example"
+      ]
+    },
+    {
+      "id": "category-3",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c3.example"
+      ]
+    },
+    {
+      "id": "category-4",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c4.example"
+      ]
+    },
+    {
+      "id": "category-5",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c5.example"
+      ]
+    },
+    {
+      "id": "category-6",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c6.example"
+      ]
+    },
+    {
+      "id": "category-7",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c7.example"
+      ]
+    },
+    {
+      "id": "category-8",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c8.example"
+      ]
+    },
+    {
+      "id": "category-9",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c9.example"
+      ]
+    },
+    {
+      "id": "category-10",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c10.example"
+      ]
+    },
+    {
+      "id": "category-11",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c11.example"
+      ]
+    },
+    {
+      "id": "category-12",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c12.example"
+      ]
+    },
+    {
+      "id": "category-13",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c13.example"
+      ]
+    },
+    {
+      "id": "category-14",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c14.example"
+      ]
+    },
+    {
+      "id": "category-15",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c15.example"
+      ]
+    },
+    {
+      "id": "category-16",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c16.example"
+      ]
+    },
+    {
+      "id": "category-17",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c17.example"
+      ]
+    },
+    {
+      "id": "category-18",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c18.example"
+      ]
+    },
+    {
+      "id": "category-19",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c19.example"
+      ]
+    },
+    {
+      "id": "category-20",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c20.example"
+      ]
+    },
+    {
+      "id": "category-21",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c21.example"
+      ]
+    },
+    {
+      "id": "category-22",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c22.example"
+      ]
+    },
+    {
+      "id": "category-23",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c23.example"
+      ]
+    },
+    {
+      "id": "category-24",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c24.example"
+      ]
+    },
+    {
+      "id": "category-25",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c25.example"
+      ]
+    },
+    {
+      "id": "category-26",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c26.example"
+      ]
+    },
+    {
+      "id": "category-27",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c27.example"
+      ]
+    },
+    {
+      "id": "category-28",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c28.example"
+      ]
+    },
+    {
+      "id": "category-29",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c29.example"
+      ]
+    },
+    {
+      "id": "category-30",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c30.example"
+      ]
+    },
+    {
+      "id": "category-31",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "c31.example"
+      ]
+    }
+  ]
+}

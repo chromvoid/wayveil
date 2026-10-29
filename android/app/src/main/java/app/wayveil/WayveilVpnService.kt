@@ -29,6 +29,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import kotlinx.serialization.json.JsonObject
 
 enum class TunnelPhase { DISCONNECTED, CONNECTING, CONNECTED, RECONNECTING, STOPPING, ERROR }
 data class TunnelStatus(val phase: TunnelPhase = TunnelPhase.DISCONNECTED, val error: String? = null) {
@@ -39,12 +40,14 @@ class WayveilVpnService : VpnService() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = Mutex()
     private var core: Engine? = null
-    private var platform: BoxPlatform? = null
+    private var platform: TunnelPlatform? = null
     private var packetThread: Thread? = null
     private var healthJob: Job? = null
     private var accessJob: Job? = null
     private var ticketExpiresAt = 0L
     private var activeProfile: ConnectionProfile? = null
+    private var activeRules: JsonObject? = null
+    private var activeRoutingMode = RoutingMode.ALL
     private var generation = 0L
     private var needsReconnect = false
     private var lastHealthLog = 0L
@@ -75,7 +78,8 @@ class WayveilVpnService : VpnService() {
     }
 
     private suspend fun startTunnel() {
-        val store = (application as WayveilApplication).profiles
+        val app = application as WayveilApplication
+        val store = app.profiles
         if ((store.profile.value == null && store.access.value == null) || prepare(this) != null || !store.consentGranted()) {
             state.value = TunnelStatus(TunnelPhase.ERROR, getString(R.string.profile_or_permission_required))
             stopSelf()
@@ -84,17 +88,21 @@ class WayveilVpnService : VpnService() {
         state.value = TunnelStatus(TunnelPhase.CONNECTING)
         try {
             val managed = store.access.value != null
-            val node = if (managed) (application as WayveilApplication).access.connection() else null
+            val node = if (managed) app.access.connection() else null
             val profile = node?.profile ?: checkNotNull(store.profile.value)
-            val config = TunnelConfig.create(profile, store.mode.value)
+            val mode = store.mode.value
+            val rules = app.routing.rules(mode)
+            val config = TunnelConfig.create(profile, mode, rules)
             Mobile.validate(config)
-            val adapter = BoxPlatform(this) { scope.launch { lock.withLock { reconnectCore() } } }
+            val adapter = TunnelPlatform(this) { scope.launch { lock.withLock { reconnectCore() } } }
             platform = adapter
             adapter.start()
             core = Mobile.start(config, adapter)
             adapter.openTun()
             startPackets(adapter, checkNotNull(core))
             activeProfile = profile
+            activeRules = rules
+            activeRoutingMode = mode
             ticketExpiresAt = node?.expiresAt ?: 0
             needsReconnect = false
             ContextCompat.registerReceiver(this, idleReceiver,
@@ -115,7 +123,7 @@ class WayveilVpnService : VpnService() {
         }
     }
 
-    private fun startPackets(adapter: BoxPlatform, engine: Engine) {
+    private fun startPackets(adapter: TunnelPlatform, engine: Engine) {
         check(packetThread == null) { "The packet loop is already running" }
         val native = HevTunnel
         val config = engine.hevConfig()
@@ -180,7 +188,7 @@ class WayveilVpnService : VpnService() {
                     val changed = current.server != replacement.server || current.port != replacement.port ||
                         current.serverName != replacement.serverName || current.obfsPassword != replacement.obfsPassword || current.certificate != replacement.certificate
                     if (core != null && (ticketExpiresAt - System.currentTimeMillis() / 1000 <= 300 || changed)) {
-                        val config = TunnelConfig.create(replacement, app.profiles.mode.value)
+                        val config = TunnelConfig.create(replacement, activeRoutingMode, checkNotNull(activeRules))
                         Mobile.validate(config)
                         state.value = TunnelStatus(TunnelPhase.RECONNECTING)
                         updateNotification(R.string.reconnecting)
@@ -295,6 +303,7 @@ class WayveilVpnService : VpnService() {
         accessJob?.cancel()
         accessJob = null
         activeProfile = null
+        activeRules = null
         ticketExpiresAt = 0
         healthJob?.cancel()
         healthJob = null

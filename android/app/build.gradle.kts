@@ -4,6 +4,13 @@ plugins {
     id("org.jetbrains.kotlin.plugin.compose")
 }
 
+val routingAssetsDirectory = layout.buildDirectory.dir("generated/routing-assets")
+val routingAssets = tasks.register<Sync>("prepareRoutingAssets") {
+    from("../../routing") { include("default-rules.json") }
+    into(routingAssetsDirectory)
+}
+tasks.named("preBuild") { dependsOn(routingAssets) }
+
 android {
     namespace = "app.wayveil"
     compileSdk = 36
@@ -11,11 +18,16 @@ android {
         applicationId = "com.chromvoid.wayveil"
         minSdk = 29
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.1.0"
+        versionCode = 6
+        versionName = "0.1.1"
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
     }
     buildFeatures { compose = true; buildConfig = true }
+    sourceSets.getByName("main").assets.srcDir(routingAssetsDirectory.get().asFile)
+    testOptions.unitTests.all {
+        it.systemProperty("routingTestdataDir", file("../../routing/testdata").absolutePath)
+        it.systemProperty("routingDefaultRulesFile", file("../../routing/default-rules.json").absolutePath)
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

@@ -1,4 +1,4 @@
-name: ChromVoidVPN
+name: Wayveil
 options:
   deploymentTarget:
     iOS: '16.0'
@@ -10,14 +10,18 @@ settings:
     TARGETED_DEVICE_FAMILY: '1,2'
     CODE_SIGN_STYLE: Automatic
     MARKETING_VERSION: '0.1.0'
-    CURRENT_PROJECT_VERSION: '7'
+    CURRENT_PROJECT_VERSION: '8'
     GENERATE_INFOPLIST_FILE: NO
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 targets:
-  ChromVoidVPN:
+  Wayveil:
     type: application
     platform: iOS
-    sources: [App, Shared]
+    sources:
+      - App
+      - Shared
+      - path: ../routing/default-rules.json
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chromvoid.vpn
@@ -36,6 +40,8 @@ targets:
       - Tunnel
       - Shared
       - path: App/Resources/PrivacyInfo.xcprivacy
+      - path: ../routing/default-rules.json
+        buildPhase: resources
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.chromvoid.vpn.Tunnel
@@ -50,7 +56,7 @@ targets:
         embed: false
       - sdk: UIKit.framework
       - sdk: Network.framework
-  ProfileTests:
+  WayveilTests:
     type: bundle.unit-test
     platform: iOS
     sources:
@@ -63,6 +69,7 @@ targets:
         GENERATE_INFOPLIST_FILE: YES
         OTHER_LDFLAGS: ['$(inherited)', '-ObjC', '-lresolv']
     dependencies:
+      - target: Wayveil
       - framework: Frameworks/WayveilCore.xcframework
         embed: false
       - framework: Frameworks/HevSocks5Tunnel.xcframework
@@ -70,10 +77,10 @@ targets:
       - sdk: UIKit.framework
       - sdk: Network.framework
 schemes:
-  ChromVoidVPN:
+  Wayveil:
     build:
       targets:
-        ChromVoidVPN: all
-        ProfileTests: [test]
+        Wayveil: all
+        WayveilTests: [test]
     test:
-      targets: [ProfileTests]
+      targets: [WayveilTests]

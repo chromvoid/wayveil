@@ -1,0 +1,10 @@
+{
+  "format": 1,
+  "direct": [
+    "example.com",
+    "xn--e1afmkfd.xn--p1ai"
+  ],
+  "proxy": [
+    "news.example.ru"
+  ]
+}

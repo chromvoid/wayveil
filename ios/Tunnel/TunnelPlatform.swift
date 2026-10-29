@@ -113,7 +113,7 @@ final class TunnelPlatform: NSObject, MobilePlatformProtocol {
     }
 
     private func failure(_ message: String) -> NSError {
-        NSError(domain: "ChromVoidVPN", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+        NSError(domain: "Wayveil", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
     }
 }
 
@@ -133,12 +133,12 @@ private final class PacketFlowBridge {
     init(provider: PacketTunnelProvider) throws {
         self.provider = provider
         guard socketpair(AF_UNIX, SOCK_DGRAM, 0, &pair) == 0 else {
-            throw NSError(domain: "ChromVoidVPN", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not create the VPN packet bridge."])
+            throw NSError(domain: "Wayveil", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not create the VPN packet bridge."])
         }
         for fd in pair { _ = fcntl(fd, F_SETFD, FD_CLOEXEC) }
         guard fcntl(pair[0], F_SETFL, O_NONBLOCK) == 0 else {
             Darwin.close(pair[0]); Darwin.close(pair[1])
-            throw NSError(domain: "ChromVoidVPN", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not configure the VPN packet bridge."])
+            throw NSError(domain: "Wayveil", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not configure the VPN packet bridge."])
         }
     }
 

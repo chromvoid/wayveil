@@ -7,10 +7,13 @@ class WayveilApplication : Application() {
         private set
     lateinit var access: AccessManager
         private set
+    lateinit var routing: RoutingRulesStore
+        private set
 
     override fun onCreate() {
         super.onCreate()
         profiles = ProfileStore(this)
-        access = AccessManager(this, profiles)
+        routing = RoutingRulesStore.create(this, profiles)
+        access = AccessManager(this, profiles, routing)
     }
 }

@@ -1,0 +1,16 @@
+{
+  "format": 1,
+  "version": 1,
+  "categories": [
+    {
+      "id": "Invalid_ID",
+      "title": {
+        "ru": "Тест",
+        "en": "Test"
+      },
+      "domain_suffix": [
+        "example.com"
+      ]
+    }
+  ]
+}

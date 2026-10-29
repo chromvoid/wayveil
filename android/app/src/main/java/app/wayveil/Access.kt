@@ -106,7 +106,22 @@ class NodeCatalog(val label: String, val expiresAt: Long, val nodes: List<Catalo
 
 data class AccessState(val catalog: NodeCatalog? = null, val loading: Boolean = false, val error: String? = null)
 
-class AccessManager(private val context: Context, private val store: ProfileStore) {
+internal fun refreshRoutingRules(
+    catalog: JsonObject,
+    token: String,
+    currentVersion: Long,
+    request: (String, String, String) -> JsonObject,
+    accept: (String) -> Boolean,
+) {
+    try {
+        val version = (catalog["routing_rules_version"] as? JsonPrimitive)?.takeUnless { it.isString }?.longOrNull ?: return
+        if (version > currentVersion) accept(request("GET", "/v1/routing-rules", token).toString())
+    } catch (_: Exception) {
+        // A routing update must not turn a successful catalog refresh into a connection failure.
+    }
+}
+
+class AccessManager(private val context: Context, private val store: ProfileStore, private val routing: RoutingRulesStore) {
     private val lock = Mutex()
     private val mutableState = MutableStateFlow(AccessState())
     val state = mutableState.asStateFlow()
@@ -139,6 +154,7 @@ class AccessManager(private val context: Context, private val store: ProfileStor
             require(result.getValue("device_id").jsonPrimitive.content == access.device)
             val catalog = NodeCatalog.parse(result)
             if (access.node.isEmpty()) catalog.selected("")?.let { store.saveAccess(access.select(it.id)) }
+            refreshRoutingRules(result, access.token, routing.base().version, { method, path, token -> request(method, path, token) }, routing::accept)
             mutableState.value = AccessState(catalog)
             return catalog
         } catch (failure: AccessFailure) {
@@ -172,6 +188,7 @@ class AccessManager(private val context: Context, private val store: ProfileStor
     } }
 
     private fun request(method: String, path: String, token: String, body: JsonObject? = null): JsonObject {
+        val maxBytes = if (path == "/v1/routing-rules") RoutingRules.MAX_DOCUMENT_BYTES else 256 * 1024
         val connectivity = context.getSystemService(ConnectivityManager::class.java)
         // Control-plane requests must still work when the tunnel's old ticket has expired.
         val network = connectivity.allNetworks.firstOrNull {
@@ -197,13 +214,14 @@ class AccessManager(private val context: Context, private val store: ProfileStor
                 while (true) {
                     val count = it.read(buffer)
                     if (count < 0) break
-                    require(output.size() + count <= 256 * 1024)
+                    require(output.size() + count <= maxBytes)
                     output.write(buffer, 0, count)
                 }
                 output.toByteArray()
             } ?: throw AccessFailure("network_error")
-            require(bytes.size <= 256 * 1024)
-            val result = Json.parseToJsonElement(String(bytes, Charsets.UTF_8)).jsonObject
+            require(bytes.size <= maxBytes)
+            val text = if (path == "/v1/routing-rules") bytes.decodeToString(throwOnInvalidSequence = true) else String(bytes, Charsets.UTF_8)
+            val result = Json.parseToJsonElement(text).jsonObject
             if (status !in 200..299) throw AccessFailure(result["error"]?.jsonPrimitive?.content ?: "network_error")
             return result
         } finally { connection.disconnect() }

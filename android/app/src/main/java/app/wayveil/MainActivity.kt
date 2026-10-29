@@ -2,6 +2,7 @@ package app.wayveil
 
 import android.Manifest
 import android.app.Activity
+import android.content.ClipboardManager
 import android.content.Intent
 import android.net.VpnService
 import android.os.Build
@@ -24,14 +25,26 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+internal val Exception.routingMessageResource: Int
+    get() = if (this is RoutingFailure) when (code) {
+        "conflicting_entry" -> R.string.routing_conflicting_entry
+        "duplicate_entry" -> R.string.routing_duplicate_entry
+        "too_many_entries" -> R.string.routing_too_many_entries
+        else -> R.string.routing_invalid_domain
+    } else R.string.routing_save_failed
+
 class MainActivity : ComponentActivity() {
     private val profiles get() = (application as WayveilApplication).profiles
     private val access get() = (application as WayveilApplication).access
+    private val routing get() = (application as WayveilApplication).routing
     private var importing by mutableStateOf(false)
     private var importText by mutableStateOf("")
     private var error by mutableStateOf<String?>(null)
     private var consent by mutableStateOf(false)
     private var saving by mutableStateOf(false)
+    private var overrides by mutableStateOf(RoutingOverrides())
+    private var overridesDamaged by mutableStateOf(false)
+    private var savingOverrides by mutableStateOf(false)
 
     private val vpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) WayveilVpnService.start(this)
@@ -69,6 +82,8 @@ class MainActivity : ComponentActivity() {
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
         )
         if (profiles.loadFailed) error = getString(R.string.load_failed)
+        overrides = routing.overrides()
+        overridesDamaged = routing.overridesError != null
         handleIntent(intent)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -86,12 +101,21 @@ class MainActivity : ComponentActivity() {
             val catalog by access.state.collectAsStateWithLifecycle()
             WayveilTheme {
                 WayveilScreen(profile, mode, status, error, credentials, catalog,
+                    overrides = overrides, overridesDamaged = overridesDamaged, savingOverrides = savingOverrides,
+                    onAddException = { input, direct -> updateRoutingOverrides { add(input, direct) } },
+                    onRemoveException = { domain, direct -> updateRoutingOverrides { remove(domain, direct) } },
                     onConnect = {
                         if (status.running) WayveilVpnService.stop(this)
                         else if (!profiles.consentGranted()) consent = true
                         else requestVpn()
                     },
-                    onImport = { showImport("") },
+                    onPaste = {
+                        val clip = getSystemService(ClipboardManager::class.java).primaryClip
+                        val text = clip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(this)?.toString()?.trim()
+                        if (text.isNullOrEmpty()) error = getString(R.string.clipboard_empty) else showImport(text)
+                    },
+                    onScan = ::scanProfile,
+                    onFile = ::openProfileFile,
                     onRemove = {
                         if (credentials == null) profiles.remove()
                         else lifecycleScope.launch {
@@ -113,11 +137,8 @@ class MainActivity : ComponentActivity() {
                     onText = { importText = it; error = null },
                     onDismiss = { importing = false; importText = ""; error = null },
                     onConfirm = { importProfile() },
-                    onFile = { document.launch(arrayOf("application/json", "text/*", "application/octet-stream")) },
-                    onScan = {
-                        scanner.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                            .setPrompt(getString(R.string.scan_prompt)).setBeepEnabled(false).setOrientationLocked(false))
-                    })
+                    onFile = ::openProfileFile,
+                    onScan = ::scanProfile)
                 if (consent) ConsentDialog(
                     onDismiss = { consent = false },
                     onAgree = { consent = false; profiles.grantConsent(); requestVpn() })
@@ -127,6 +148,22 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) { super.onNewIntent(intent); handleIntent(intent) }
 
+    private suspend fun updateRoutingOverrides(update: RoutingRulesStore.() -> Unit): Int? {
+        // A second tap can be queued before the disabled button recomposes; drop it instead of reporting a duplicate.
+        if (savingOverrides) return null
+        savingOverrides = true
+        return try {
+            overrides = withContext(Dispatchers.IO) {
+                routing.update()
+                routing.overrides()
+            }
+            overridesDamaged = routing.overridesError != null
+            null
+        } catch (failure: CancellationException) { throw failure }
+        catch (failure: Exception) { failure.routingMessageResource }
+        finally { savingOverrides = false }
+    }
+
     private fun handleIntent(value: Intent) {
         when (value.action) {
             Intent.ACTION_VIEW -> value.dataString?.let(::showImport)
@@ -135,6 +172,13 @@ class MainActivity : ComponentActivity() {
         value.data = null
         value.removeExtra(Intent.EXTRA_TEXT)
     }
+
+    private fun scanProfile() {
+        scanner.launch(ScanOptions().setDesiredBarcodeFormats(ScanOptions.QR_CODE)
+            .setPrompt(getString(R.string.scan_prompt)).setBeepEnabled(false).setOrientationLocked(false))
+    }
+
+    private fun openProfileFile() = document.launch(arrayOf("application/json", "text/*", "application/octet-stream"))
 
     private fun showImport(text: String) {
         if (WayveilVpnService.status.value.running) { error = getString(R.string.disconnect_first); return }

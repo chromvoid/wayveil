@@ -56,7 +56,7 @@ class ProfileStore(context: Context) {
         savedAccess.value = null
     }
 
-    private fun readEncrypted(source: AtomicFile): String {
+    internal fun readEncrypted(source: AtomicFile): String {
         val bytes = source.readFully()
         require(bytes.size in 29..(ConnectionProfile.MAX_LENGTH * 4))
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
@@ -64,7 +64,7 @@ class ProfileStore(context: Context) {
         return String(cipher.doFinal(bytes.copyOfRange(12, bytes.size)), Charsets.UTF_8)
     }
 
-    private fun writeEncrypted(target: AtomicFile, text: String) {
+    internal fun writeEncrypted(target: AtomicFile, text: String) {
         val cipher = Cipher.getInstance("AES/GCM/NoPadding")
         cipher.init(Cipher.ENCRYPT_MODE, key())
         val output = target.startWrite()

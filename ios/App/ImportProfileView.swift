@@ -39,7 +39,7 @@ struct ImportProfileView: View {
             }
             .toolbar { ToolbarItem(placement: .cancellationAction) { Button(L("cancel")) { text = ""; dismiss() } } }
         }
-        .preferredColorScheme(.dark).tint(Brand.mint)
+        .preferredColorScheme(.dark).tint(Brand.cyan)
         .fileImporter(isPresented: $showFile, allowedContentTypes: [.json, .plainText]) { result in
             do { text = try Self.readFile(result.get()) }
             catch { self.error = L("read_failed") }

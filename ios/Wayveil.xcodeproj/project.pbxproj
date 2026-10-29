@@ -1,0 +1,800 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		04BFCBF8AEB63C3F3D1633E7 /* default-rules.json in Resources */ = {isa = PBXBuildFile; fileRef = C505F07D427B08322C9FFF82 /* default-rules.json */; };
+		1444CCC316D2116E62197D88 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E9870F8DC1635549A5DCD2D /* UIKit.framework */; };
+		14893CA3F15590794F6B0432 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E9870F8DC1635549A5DCD2D /* UIKit.framework */; };
+		19F88DB9E6ADC23EFE0E2FBA /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2BDF30C2B6787B785E3FE /* Network.framework */; };
+		1FF2404C86D1C44598DC5152 /* PortalMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66B637F29242DC50938E5FF /* PortalMotion.swift */; };
+		230B65936737E966C5C531D9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB5D2736109D73FF802FB014 /* Localizable.strings */; };
+		256B16087FE32DAA471B0A82 /* WayveilCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */; };
+		2EF761CF6E24865B0533013A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
+		313F377E8BDA22B482BD5E55 /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
+		32C13D97588B61804D2D4701 /* TunnelConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539ED89716837C08372C8356 /* TunnelConfiguration.swift */; };
+		3CA15F07CD71E6E1458D091A /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C54CE86672A9C07E558FE22 /* PacketTunnelProvider.swift */; };
+		47963E9E1D133228B5ECA814 /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
+		491D042981B8B58FBD0CFD61 /* TunnelConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539ED89716837C08372C8356 /* TunnelConfiguration.swift */; };
+		59F3E6E9438496F37AE4154D /* VPNController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B570BD50F853DFC6A072932C /* VPNController.swift */; };
+		5C3D7F0EF3DA81E5CB6088AD /* PortalShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 854A279299A955A157ABB08A /* PortalShader.metal */; };
+		6A7A0CC368FA09D258DD0A52 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
+		6FAC77AEF36F63325E8AA099 /* PortalMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66B637F29242DC50938E5FF /* PortalMotion.swift */; };
+		73F6B2BEFDD51942FC607345 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8B3E9C4115C0941C9B8B7F /* ContentView.swift */; };
+		74F3632755E102F38B874E54 /* QRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3081244A8599A915894C5CE0 /* QRScanner.swift */; };
+		83F1B2E8206FB724B8611B34 /* PortalEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E8AF73505F456C6069FECB /* PortalEffect.swift */; };
+		878CC0DC31C508DE64F15BBC /* TunnelPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8388C7E26FFB535762C05C2E /* TunnelPlatform.swift */; };
+		94AF04377D3F2F8FC2C48D73 /* PacketTunnel.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		96EA716B1F154482E47B6CF7 /* ProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E45BE23F2BF3D20006A62F2 /* ProfileTests.swift */; };
+		9BC56546EC591585EA6BDA15 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
+		9BDDA031B5D7CC38A14DE41A /* ThirdPartyNotices.txt in Resources */ = {isa = PBXBuildFile; fileRef = 4B5014EEFD914D791EC4A765 /* ThirdPartyNotices.txt */; };
+		9DFB4952CEF0BF1A8D6830B5 /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
+		9EBBC252E1CED2B644313C7B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2FD1A942E067DD47B3849171 /* InfoPlist.strings */; };
+		A6E71D811AA4B487038582AF /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
+		A99395DB8689883F027CE897 /* PortalMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9D6529B3BAD2120A920BB /* PortalMotionTests.swift */; };
+		AA1BA158F2E651CF5B6F774A /* default-rules.json in Resources */ = {isa = PBXBuildFile; fileRef = C505F07D427B08322C9FFF82 /* default-rules.json */; };
+		B90C7AFB445B2E666347E327 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
+		B944196F250FE4FBFE329537 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A2622C37A43EDF8BD8BC83 /* MetalKit.framework */; };
+		BC06B51097D9D1AAC304328B /* TunnelConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539ED89716837C08372C8356 /* TunnelConfiguration.swift */; };
+		BF2A05F4510111F453F6E17D /* PortalButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29A8CE54864B5198B4B805A /* PortalButton.swift */; };
+		C32249CADBC8A0164F38440E /* ImportProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33AF60D5C9CE91BED130D38 /* ImportProfileView.swift */; };
+		C740D3CD2D120311FCFB6325 /* HevSocks5Tunnel.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */; };
+		CC75464F7122C4D85E15391A /* WayveilCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */; };
+		D0478BECDF865B91A7072525 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
+		D6D8FAF12439C778631A8427 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */; };
+		D711EA58E50311BD3B976E12 /* WayveilApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8226212B56DA290CE043BC0F /* WayveilApp.swift */; };
+		D928BA40CAA2A85A7BF42996 /* HevSocks5Tunnel.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */; };
+		E0B6929450A695251B7BF040 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2BDF30C2B6787B785E3FE /* Network.framework */; };
+		E5B4DFE173123CD5C964720A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */; };
+		F384905F89988D2AB2F812C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51CA4C1DA049095B452436D1 /* Assets.xcassets */; };
+		F3A8B7FB76A6E6488C4E7BF7 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C264DF0D76E728C3E9FCE476 /* CoreMotion.framework */; };
+		FD1CBB707E5B68BA2B639584 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 988DFC5E2B8B8D4328832CE4 /* LaunchScreen.storyboard */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		39589F4E7BB142EFBFDA7240 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8C2698482377B4524AC10E6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 25A509A060DE3D82AC31DD14;
+			remoteInfo = PacketTunnel;
+		};
+		4E2ACE68203763CD01A6F7E4 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8C2698482377B4524AC10E6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 7D896B92E69E4F06DC60EB3F;
+			remoteInfo = Wayveil;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		56EE3E237AEC33A89A86B010 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				94AF04377D3F2F8FC2C48D73 /* PacketTunnel.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		3081244A8599A915894C5CE0 /* QRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanner.swift; sourceTree = "<group>"; };
+		3E45BE23F2BF3D20006A62F2 /* ProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTests.swift; sourceTree = "<group>"; };
+		3E536CF43C3320F74B0B3D4A /* WayveilTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WayveilTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		3F345B709CE0BB0D00838070 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		4B5014EEFD914D791EC4A765 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
+		51CA4C1DA049095B452436D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		51D3D442368B239D69FE590A /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
+		539ED89716837C08372C8356 /* TunnelConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunnelConfiguration.swift; sourceTree = "<group>"; };
+		53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		629A28251E90E25223F78604 /* ConnectionProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProfile.swift; sourceTree = "<group>"; };
+		64D9EBECF30AA3D93A927AAE /* Wayveil.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wayveil.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		6C54CE86672A9C07E558FE22 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		7BD86798C5C00B087DF3E587 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		7CB9D6529B3BAD2120A920BB /* PortalMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMotionTests.swift; sourceTree = "<group>"; };
+		7E9870F8DC1635549A5DCD2D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		8226212B56DA290CE043BC0F /* WayveilApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WayveilApp.swift; sourceTree = "<group>"; };
+		8388C7E26FFB535762C05C2E /* TunnelPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunnelPlatform.swift; sourceTree = "<group>"; };
+		854A279299A955A157ABB08A /* PortalShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PortalShader.metal; sourceTree = "<group>"; };
+		862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = HevSocks5Tunnel.xcframework; path = Frameworks/HevSocks5Tunnel.xcframework; sourceTree = "<group>"; };
+		891CDE3335485A300A2BA2EB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
+		92A2622C37A43EDF8BD8BC83 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		988DFC5E2B8B8D4328832CE4 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A29A8CE54864B5198B4B805A /* PortalButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalButton.swift; sourceTree = "<group>"; };
+		A66B637F29242DC50938E5FF /* PortalMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMotion.swift; sourceTree = "<group>"; };
+		ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		B570BD50F853DFC6A072932C /* VPNController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPNController.swift; sourceTree = "<group>"; };
+		C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingRules.swift; sourceTree = "<group>"; };
+		C264DF0D76E728C3E9FCE476 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
+		C33AF60D5C9CE91BED130D38 /* ImportProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportProfileView.swift; sourceTree = "<group>"; };
+		C505F07D427B08322C9FFF82 /* default-rules.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "default-rules.json"; sourceTree = "<group>"; };
+		DFD2BDF30C2B6787B785E3FE /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
+		E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = WayveilCore.xcframework; path = Frameworks/WayveilCore.xcframework; sourceTree = "<group>"; };
+		EFA6B98FC37E00F2471A3975 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
+		F6E8AF73505F456C6069FECB /* PortalEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalEffect.swift; sourceTree = "<group>"; };
+		FE8B3E9C4115C0941C9B8B7F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		0302BFF0E34428D6A5400CF6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				256B16087FE32DAA471B0A82 /* WayveilCore.xcframework in Frameworks */,
+				D928BA40CAA2A85A7BF42996 /* HevSocks5Tunnel.xcframework in Frameworks */,
+				1444CCC316D2116E62197D88 /* UIKit.framework in Frameworks */,
+				E0B6929450A695251B7BF040 /* Network.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		6FB368135FC518BB2C1C41D4 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				CC75464F7122C4D85E15391A /* WayveilCore.xcframework in Frameworks */,
+				C740D3CD2D120311FCFB6325 /* HevSocks5Tunnel.xcframework in Frameworks */,
+				14893CA3F15590794F6B0432 /* UIKit.framework in Frameworks */,
+				19F88DB9E6ADC23EFE0E2FBA /* Network.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B95A557FD2CA221050198160 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B944196F250FE4FBFE329537 /* MetalKit.framework in Frameworks */,
+				F3A8B7FB76A6E6488C4E7BF7 /* CoreMotion.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		00C663AC53D7CBA51BEC6EDF /* wayveil */ = {
+			isa = PBXGroup;
+			children = (
+				690262625B4E53E9937044AD /* routing */,
+			);
+			name = wayveil;
+			path = ..;
+			sourceTree = "<group>";
+		};
+		3BF2BC30F55A09DEA8FA83AA /* Tunnel */ = {
+			isa = PBXGroup;
+			children = (
+				6C54CE86672A9C07E558FE22 /* PacketTunnelProvider.swift */,
+				8388C7E26FFB535762C05C2E /* TunnelPlatform.swift */,
+			);
+			path = Tunnel;
+			sourceTree = "<group>";
+		};
+		690262625B4E53E9937044AD /* routing */ = {
+			isa = PBXGroup;
+			children = (
+				C505F07D427B08322C9FFF82 /* default-rules.json */,
+			);
+			path = routing;
+			sourceTree = "<group>";
+		};
+		6981C43A14B3D7565B5BDA8E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */,
+				64D9EBECF30AA3D93A927AAE /* Wayveil.app */,
+				3E536CF43C3320F74B0B3D4A /* WayveilTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8BD45DC8CD69DFCAF7EFC81A /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				629A28251E90E25223F78604 /* ConnectionProfile.swift */,
+				891CDE3335485A300A2BA2EB /* ProfileStore.swift */,
+				C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */,
+				539ED89716837C08372C8356 /* TunnelConfiguration.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		9A45E178089A992E57EB14DB = {
+			isa = PBXGroup;
+			children = (
+				A1ED51F7C64E6350BB82DC29 /* App */,
+				8BD45DC8CD69DFCAF7EFC81A /* Shared */,
+				A01944ACD14F010FC5F801CB /* Tests */,
+				3BF2BC30F55A09DEA8FA83AA /* Tunnel */,
+				00C663AC53D7CBA51BEC6EDF /* wayveil */,
+				A4190959061F8CA43CA866BC /* Frameworks */,
+				6981C43A14B3D7565B5BDA8E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		A01944ACD14F010FC5F801CB /* Tests */ = {
+			isa = PBXGroup;
+			children = (
+				7CB9D6529B3BAD2120A920BB /* PortalMotionTests.swift */,
+				3E45BE23F2BF3D20006A62F2 /* ProfileTests.swift */,
+			);
+			path = Tests;
+			sourceTree = "<group>";
+		};
+		A1ED51F7C64E6350BB82DC29 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				FE8B3E9C4115C0941C9B8B7F /* ContentView.swift */,
+				C33AF60D5C9CE91BED130D38 /* ImportProfileView.swift */,
+				A29A8CE54864B5198B4B805A /* PortalButton.swift */,
+				F6E8AF73505F456C6069FECB /* PortalEffect.swift */,
+				A66B637F29242DC50938E5FF /* PortalMotion.swift */,
+				854A279299A955A157ABB08A /* PortalShader.metal */,
+				3081244A8599A915894C5CE0 /* QRScanner.swift */,
+				B570BD50F853DFC6A072932C /* VPNController.swift */,
+				8226212B56DA290CE043BC0F /* WayveilApp.swift */,
+				A6A21904C9D929BA86CE24FC /* Resources */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		A4190959061F8CA43CA866BC /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				C264DF0D76E728C3E9FCE476 /* CoreMotion.framework */,
+				862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */,
+				92A2622C37A43EDF8BD8BC83 /* MetalKit.framework */,
+				DFD2BDF30C2B6787B785E3FE /* Network.framework */,
+				7E9870F8DC1635549A5DCD2D /* UIKit.framework */,
+				E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		A6A21904C9D929BA86CE24FC /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				51CA4C1DA049095B452436D1 /* Assets.xcassets */,
+				988DFC5E2B8B8D4328832CE4 /* LaunchScreen.storyboard */,
+				53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */,
+				4B5014EEFD914D791EC4A765 /* ThirdPartyNotices.txt */,
+				2FD1A942E067DD47B3849171 /* InfoPlist.strings */,
+				CB5D2736109D73FF802FB014 /* Localizable.strings */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		25A509A060DE3D82AC31DD14 /* PacketTunnel */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B5E4872B96176D8E382C971B /* Build configuration list for PBXNativeTarget "PacketTunnel" */;
+			buildPhases = (
+				C0EFB97D16EBFF999AAB6369 /* Sources */,
+				60E2B0C6F9A681BA3FC9BEF6 /* Resources */,
+				0302BFF0E34428D6A5400CF6 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = PacketTunnel;
+			packageProductDependencies = (
+			);
+			productName = PacketTunnel;
+			productReference = ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		6E156569545D68E631723186 /* WayveilTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FF8C4DEC897C667C078CBADC /* Build configuration list for PBXNativeTarget "WayveilTests" */;
+			buildPhases = (
+				71CE0D0BB6C841E96346F5F9 /* Sources */,
+				6FB368135FC518BB2C1C41D4 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4E618EEB0161C42E59E1909B /* PBXTargetDependency */,
+			);
+			name = WayveilTests;
+			packageProductDependencies = (
+			);
+			productName = WayveilTests;
+			productReference = 3E536CF43C3320F74B0B3D4A /* WayveilTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		7D896B92E69E4F06DC60EB3F /* Wayveil */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DC409D06A582D1FFF7EE8656 /* Build configuration list for PBXNativeTarget "Wayveil" */;
+			buildPhases = (
+				DBEA9F3EEF179D95ACB53AE0 /* Sources */,
+				90CD1F82BA763E6676E7554D /* Resources */,
+				B95A557FD2CA221050198160 /* Frameworks */,
+				56EE3E237AEC33A89A86B010 /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				2D3D3039305F28B549BC566B /* PBXTargetDependency */,
+			);
+			name = Wayveil;
+			packageProductDependencies = (
+			);
+			productName = Wayveil;
+			productReference = 64D9EBECF30AA3D93A927AAE /* Wayveil.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F8C2698482377B4524AC10E6 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					25A509A060DE3D82AC31DD14 = {
+						ProvisioningStyle = Automatic;
+					};
+					6E156569545D68E631723186 = {
+						ProvisioningStyle = Automatic;
+					};
+					7D896B92E69E4F06DC60EB3F = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 4F9B7CC277B64593D8CC4EBC /* Build configuration list for PBXProject "Wayveil" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+				ru,
+			);
+			mainGroup = 9A45E178089A992E57EB14DB;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 6981C43A14B3D7565B5BDA8E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				7D896B92E69E4F06DC60EB3F /* Wayveil */,
+				25A509A060DE3D82AC31DD14 /* PacketTunnel */,
+				6E156569545D68E631723186 /* WayveilTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		60E2B0C6F9A681BA3FC9BEF6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E5B4DFE173123CD5C964720A /* PrivacyInfo.xcprivacy in Resources */,
+				04BFCBF8AEB63C3F3D1633E7 /* default-rules.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		90CD1F82BA763E6676E7554D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F384905F89988D2AB2F812C9 /* Assets.xcassets in Resources */,
+				9EBBC252E1CED2B644313C7B /* InfoPlist.strings in Resources */,
+				FD1CBB707E5B68BA2B639584 /* LaunchScreen.storyboard in Resources */,
+				230B65936737E966C5C531D9 /* Localizable.strings in Resources */,
+				D6D8FAF12439C778631A8427 /* PrivacyInfo.xcprivacy in Resources */,
+				9BDDA031B5D7CC38A14DE41A /* ThirdPartyNotices.txt in Resources */,
+				AA1BA158F2E651CF5B6F774A /* default-rules.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		71CE0D0BB6C841E96346F5F9 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D0478BECDF865B91A7072525 /* ConnectionProfile.swift in Sources */,
+				6FAC77AEF36F63325E8AA099 /* PortalMotion.swift in Sources */,
+				A99395DB8689883F027CE897 /* PortalMotionTests.swift in Sources */,
+				9BC56546EC591585EA6BDA15 /* ProfileStore.swift in Sources */,
+				96EA716B1F154482E47B6CF7 /* ProfileTests.swift in Sources */,
+				47963E9E1D133228B5ECA814 /* RoutingRules.swift in Sources */,
+				BC06B51097D9D1AAC304328B /* TunnelConfiguration.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C0EFB97D16EBFF999AAB6369 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B90C7AFB445B2E666347E327 /* ConnectionProfile.swift in Sources */,
+				3CA15F07CD71E6E1458D091A /* PacketTunnelProvider.swift in Sources */,
+				2EF761CF6E24865B0533013A /* ProfileStore.swift in Sources */,
+				313F377E8BDA22B482BD5E55 /* RoutingRules.swift in Sources */,
+				491D042981B8B58FBD0CFD61 /* TunnelConfiguration.swift in Sources */,
+				878CC0DC31C508DE64F15BBC /* TunnelPlatform.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBEA9F3EEF179D95ACB53AE0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A7A0CC368FA09D258DD0A52 /* ConnectionProfile.swift in Sources */,
+				73F6B2BEFDD51942FC607345 /* ContentView.swift in Sources */,
+				C32249CADBC8A0164F38440E /* ImportProfileView.swift in Sources */,
+				BF2A05F4510111F453F6E17D /* PortalButton.swift in Sources */,
+				83F1B2E8206FB724B8611B34 /* PortalEffect.swift in Sources */,
+				1FF2404C86D1C44598DC5152 /* PortalMotion.swift in Sources */,
+				5C3D7F0EF3DA81E5CB6088AD /* PortalShader.metal in Sources */,
+				A6E71D811AA4B487038582AF /* ProfileStore.swift in Sources */,
+				74F3632755E102F38B874E54 /* QRScanner.swift in Sources */,
+				9DFB4952CEF0BF1A8D6830B5 /* RoutingRules.swift in Sources */,
+				32C13D97588B61804D2D4701 /* TunnelConfiguration.swift in Sources */,
+				59F3E6E9438496F37AE4154D /* VPNController.swift in Sources */,
+				D711EA58E50311BD3B976E12 /* WayveilApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		2D3D3039305F28B549BC566B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 25A509A060DE3D82AC31DD14 /* PacketTunnel */;
+			targetProxy = 39589F4E7BB142EFBFDA7240 /* PBXContainerItemProxy */;
+		};
+		4E618EEB0161C42E59E1909B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 7D896B92E69E4F06DC60EB3F /* Wayveil */;
+			targetProxy = 4E2ACE68203763CD01A6F7E4 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		2FD1A942E067DD47B3849171 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				3F345B709CE0BB0D00838070 /* en */,
+				7BD86798C5C00B087DF3E587 /* ru */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		CB5D2736109D73FF802FB014 /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				EFA6B98FC37E00F2471A3975 /* en */,
+				51D3D442368B239D69FE590A /* ru */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		0F91051B549496FDFB03C037 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Configuration/Tunnel.entitlements;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Frameworks\"",
+				);
+				INFOPLIST_FILE = "Configuration/Tunnel-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lresolv",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn.Tunnel;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		224CE84D61C14B65F8D0E838 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Configuration/App.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Configuration/App-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		32F0C0B93C9A9CBAB9E3E6E2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 8;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		7CFD756430F7E97D03C461C8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 8;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		807A38466D539BA613FFE3B8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Frameworks\"",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lresolv",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn.ProfileTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Wayveil.app/Wayveil";
+			};
+			name = Debug;
+		};
+		8166AA8DE8EDB9999E8B1D4A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Configuration/App.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = "Configuration/App-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		BAE6C2FFB1547D3470FF049C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Frameworks\"",
+				);
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lresolv",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn.ProfileTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Wayveil.app/Wayveil";
+			};
+			name = Release;
+		};
+		DD80F7578D404B78938E2C49 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Configuration/Tunnel.entitlements;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"Frameworks\"",
+				);
+				INFOPLIST_FILE = "Configuration/Tunnel-Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					"-ObjC",
+					"-lresolv",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn.Tunnel;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		4F9B7CC277B64593D8CC4EBC /* Build configuration list for PBXProject "Wayveil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7CFD756430F7E97D03C461C8 /* Debug */,
+				32F0C0B93C9A9CBAB9E3E6E2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B5E4872B96176D8E382C971B /* Build configuration list for PBXNativeTarget "PacketTunnel" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DD80F7578D404B78938E2C49 /* Debug */,
+				0F91051B549496FDFB03C037 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DC409D06A582D1FFF7EE8656 /* Build configuration list for PBXNativeTarget "Wayveil" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				224CE84D61C14B65F8D0E838 /* Debug */,
+				8166AA8DE8EDB9999E8B1D4A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FF8C4DEC897C667C078CBADC /* Build configuration list for PBXNativeTarget "WayveilTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				807A38466D539BA613FFE3B8 /* Debug */,
+				BAE6C2FFB1547D3470FF049C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F8C2698482377B4524AC10E6 /* Project object */;
+}

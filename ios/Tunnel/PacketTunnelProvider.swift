@@ -28,7 +28,9 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
                 guard let profile = try ProfileStore.read() else { throw failure("A connection profile is required.") }
                 let rawMode = (protocolConfiguration as? NETunnelProviderProtocol)?.providerConfiguration?["routing"] as? String
                 guard let mode = rawMode.flatMap(RoutingMode.init(rawValue:)) else { throw failure("The routing mode is missing.") }
-                let config = try TunnelConfiguration.make(profile: profile, routing: mode)
+                let base = try RoutingDocument.bundled()
+                let overrides = (try? RoutingOverrideStore.read()) ?? .empty
+                let config = try TunnelConfiguration.make(profile: profile, routing: mode, base: base, overrides: overrides)
                 var coreError: NSError?
                 guard MobileValidate(config, &coreError), coreError == nil else { throw failure("The VPN configuration could not be loaded.") }
                 let platform = TunnelPlatform(provider: self)
@@ -173,6 +175,6 @@ final class PacketTunnelProvider: NEPacketTunnelProvider {
     }
 
     private func failure(_ message: String) -> NSError {
-        NSError(domain: "ChromVoidVPN", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
+        NSError(domain: "Wayveil", code: 1, userInfo: [NSLocalizedDescriptionKey: message])
     }
 }

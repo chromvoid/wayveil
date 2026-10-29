@@ -1,0 +1,97 @@
+[
+  {
+    "name": "scheme-path",
+    "input": "https://www.Gosuslugi.ru/help",
+    "expected": "gosuslugi.ru"
+  },
+  {
+    "name": "port",
+    "input": "https://Example.com:8443/help",
+    "expected": "example.com"
+  },
+  {
+    "name": "bare-host-port-path",
+    "input": "www.Example.com:443/help",
+    "expected": "example.com"
+  },
+  {
+    "name": "uppercase",
+    "input": "VK.COM",
+    "expected": "vk.com"
+  },
+  {
+    "name": "www-prefix",
+    "input": "www.yandex.net",
+    "expected": "yandex.net"
+  },
+  {
+    "name": "unicode",
+    "input": "пример.рф",
+    "expected": "xn--e1afmkfd.xn--p1ai"
+  },
+  {
+    "name": "unicode-url",
+    "input": "https://www.ПРИМЕР.РФ:443/help",
+    "expected": "xn--e1afmkfd.xn--p1ai"
+  },
+  {
+    "name": "unicode-yandex",
+    "input": "https://яндекс.рф/help",
+    "expected": "xn--d1acpjx3f.xn--p1ai"
+  },
+  {
+    "name": "empty",
+    "input": "",
+    "expected": null
+  },
+  {
+    "name": "spaces",
+    "input": "not a domain",
+    "expected": null
+  },
+  {
+    "name": "single-label",
+    "input": "ru",
+    "expected": null
+  },
+  {
+    "name": "localhost",
+    "input": "localhost",
+    "expected": null
+  },
+  {
+    "name": "ipv4",
+    "input": "https://127.0.0.1/help",
+    "expected": null
+  },
+  {
+    "name": "ipv6",
+    "input": "http://[::1]:8080/help",
+    "expected": null
+  },
+  {
+    "name": "wildcard",
+    "input": "*.example.com",
+    "expected": null
+  },
+  {
+    "name": "missing-host",
+    "input": "https:///help",
+    "expected": null
+  },
+  {
+    "name": "empty-label",
+    "input": "one..example",
+    "expected": null
+  },
+  {
+    "name": "leading-hyphen",
+    "input": "-example.com",
+    "expected": null
+  },
+  {
+    "name": "underscore",
+    "input": "invalid_name.example",
+    "expected": null
+  }
+]

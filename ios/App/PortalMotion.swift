@@ -45,9 +45,6 @@ struct PortalMotion {
     private(set) var spin: Float = 0
     private(set) var spinVelocity: Float = 0
 
-    /// True once the crescents rest, so nothing needs drawing at full frame rate.
-    var settled: Bool { splitVelocity == 0 && spinVelocity == 0 }
-
     /// Records a phase change and returns true when the tunnel has just connected.
     /// Transitions are read from phase changes, so a stopping phase too short to render still closes the portal.
     mutating func observe(lit: Bool, connected: Bool, power: Float, busy: Float, now: TimeInterval) -> Bool {
@@ -137,4 +134,38 @@ struct PortalMotion {
 private func smoothstep(_ edge0: Float, _ edge1: Float, _ x: Float) -> Float {
     let t = min(1, max(0, (x - edge0) / (edge1 - edge0)))
     return t * t * (3 - 2 * t)
+}
+
+/// Places the packets of light that run round the ring while it is connected: three along the inner wire, three the other way along the outer one.
+/// The shader gets their heads ready-made, so it does not work out the same six angles for every pixel.
+enum PortalTraffic {
+    typealias Packets = (SIMD4<Float>, SIMD4<Float>, SIMD4<Float>, SIMD4<Float>, SIMD4<Float>, SIMD4<Float>)
+
+    /// A fixed random number per packet that sets where it starts, how fast it runs and how long its tail is.
+    static let seeds: [Float] = [0.5524, 0.8349, 0.8579, 0.6066, 0.4873, 0.2637]
+
+    /// Per packet: x and y the unit vector from the ring's centre to its head, z how fast its tail fades.
+    static func packets(at time: Float) -> Packets {
+        func packet(_ i: Int) -> SIMD4<Float> {
+            let seed = seeds[i]
+            let direction: Float = i < 3 ? 1 : -1
+            let head = Float(i) * 2.1 + seed * 6 + direction * time * (4 + 2.5 * seed)
+            return SIMD4(cos(head), sin(head), 1.3 + 1.2 * seed, 0)
+        }
+        return (packet(0), packet(1), packet(2), packet(3), packet(4), packet(5))
+    }
+}
+
+/// Places the one light that shades the whole portal: the ring's reflection, glint and highlight, and the logo's gloss and shadow.
+/// It circles slowly at rest and leans towards the edge that the tilt turned to the viewer, so all of them follow the hand together.
+/// Mirrors PortalLight in PortalEffect.kt on Android.
+enum PortalLight {
+    /// x, y and z the unit vector towards the light (x right, y up, z towards the viewer); w how far tilt has drawn it down, 0...1.
+    static func light(at time: Float, tilt: SIMD2<Float>) -> SIMD4<Float> {
+        let lean = smoothstep(0.04, 0.5, min(1, (tilt * tilt).sum().squareRoot()))
+        let angle = time * 0.65
+        let toward = SIMD2(cos(angle), sin(angle)) * 0.65 * (1 - 0.7 * lean) - tilt * 1.3
+        let length = (toward.x * toward.x + toward.y * toward.y + 0.81).squareRoot()
+        return SIMD4(toward.x / length, toward.y / length, 0.9 / length, lean)
+    }
 }

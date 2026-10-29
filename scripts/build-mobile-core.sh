@@ -6,7 +6,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HYSTERIA="$ROOT/third_party/hysteria"
-HYSTERIA_REVISION=381bdbb6ec1d5936bdc6b7471a5da3d777452e0c
+HYSTERIA_REVISION=91d0786404bbaefc491353da2cdf7708f3c37228
 HEV="$ROOT/third_party/hev"
 HEV_REVISION=55cc2efc280f3a72ffc60ce856772b57f5122e9c
 BUILD="$ROOT/.local/native/hev"
@@ -20,6 +20,8 @@ mkdir -p "$GOBIN" "$BUILD" "$ROOT/ios/Frameworks" "$ROOT/android/app/libs"
 # The HEV lifecycle patch is already applied; fail if those inputs change.
 test "$(shasum -a 256 "$HEV/src/hev-socks5-tunnel.c" | cut -d " " -f 1)" = 5823e607770e06ec04685c29d1f0123b12cea65059c225c83eba4dcc76d4afec
 test "$(shasum -a 256 "$HEV/src/hev-main.h" | cut -d " " -f 1)" = 17b0319b1951df4196269058fd1fa23f07e12f585a961be31270ed985e34b795
+# The core tests its routing decisions against a copy of the shared fixture.
+cmp "$HYSTERIA/app/mobile/testdata/routing-decisions.json" "$ROOT/routing/testdata/decisions.json"
 
 build_apple() {
     local sdk="$1" arch="$2" output="$BUILD/apple/$1-$2"

@@ -64,7 +64,7 @@ final class VPNController: ObservableObject {
     }
 
     func save(_ text: String) throws {
-        guard !phase.running else { throw NSError(domain: "ChromVoidVPN", code: 1, userInfo: [NSLocalizedDescriptionKey: L("disconnect_first")]) }
+        guard !phase.running else { throw NSError(domain: "Wayveil", code: 1, userInfo: [NSLocalizedDescriptionKey: L("disconnect_first")]) }
         let value = try ConnectionProfile.parse(text)
         try ProfileStore.save(value)
         profile = value; error = nil

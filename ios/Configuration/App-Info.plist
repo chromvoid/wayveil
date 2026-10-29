@@ -10,7 +10,7 @@
     <key>CFBundleVersion</key><string>$(CURRENT_PROJECT_VERSION)</string>
     <key>LSRequiresIPhoneOS</key><true/>
     <key>ITSAppUsesNonExemptEncryption</key><false/>
-    <key>ChromVoidKeychainAccessGroup</key><string>$(AppIdentifierPrefix)com.chromvoid.vpn.shared</string>
+    <key>WayveilKeychainAccessGroup</key><string>$(AppIdentifierPrefix)com.chromvoid.vpn.shared</string>
     <key>NSCameraUsageDescription</key><string>Scan a connection profile QR code.</string>
     <key>NSMotionUsageDescription</key><string>Use phone tilt to move the connection button's highlights.</string>
     <key>UILaunchStoryboardName</key><string>LaunchScreen</string>

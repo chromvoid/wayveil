@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "version": 1,
+  "categories": [
+    {
+      "id": "ru-tld",
+      "title": {
+        "ru": "Российские доменные зоны",
+        "en": "Russian domain zones"
+      },
+      "domain_suffix": [
+        "ru",
+        "su",
+        "xn--p1ai"
+      ]
+    },
+    {
+      "id": "vk-yandex",
+      "title": {
+        "ru": "VK и Яндекс",
+        "en": "VK and Yandex"
+      },
+      "domain_suffix": [
+        "yandex.net",
+        "yastatic.net",
+        "vk.com",
+        "userapi.com"
+      ],
+      "domain": []
+    }
+  ]
+}

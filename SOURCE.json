@@ -5,51 +5,27 @@
     "Android"
   ],
   "version": "0.1.0",
-  "build": "7",
-  "source_tag": "ios-v0.1.0-build.7",
+  "build": "8",
+  "source_tag": "ios-v0.1.0-build.8",
   "ios": {
     "version": "0.1.0",
-    "build": "7",
+    "build": "8",
     "bundle_identifier": "com.chromvoid.vpn",
     "original_ipa_distribution": "app-store-connect export; upload and review submission are separate publisher actions",
-    "hysteria_commit": "381bdbb6ec1d5936bdc6b7471a5da3d777452e0c",
+    "hysteria_commit": "91d0786404bbaefc491353da2cdf7708f3c37228",
     "hysteria_vcs_clean": true
   },
   "android": {
-    "version": "0.1.0",
-    "version_code": 5,
+    "version": "0.1.1",
+    "version_code": 6,
     "application_id": "com.chromvoid.wayveil",
-    "source_tag": "ios-v0.1.0-build.7",
-    "new_binary_validation": "debug and unsigned release/R8 builds, 15 existing JVM tests and lint passed",
-    "shader_runtime_validation": {
-      "result": "passed on final debug APK",
-      "api": 34,
-      "abi": "arm64",
-      "renderer": "SwiftShader",
-      "owned_emulator_removed": true,
-      "scope": "Disconnected UI and AGSL compilation/rendering only; no physical GPU/performance or connected-state visual claim"
-    },
-    "debug_apk_sha256": "94121cae3c5e6508b3bab6f3e55bb31c19da36c3e981a36f71f1a564fc81158e",
-    "unsigned_release_apk_sha256": "90743a23220fcc06e05e00ae43f9727424f5b770fbdfd2be1a043b05bceb88e8",
-    "release_signing_state": "unsigned; not uploaded to Google Play",
-    "tests_passed": 15,
-    "test_failures": 0,
-    "test_errors": 0,
-    "test_skipped": 0,
-    "lint_errors": 0,
-    "lint_warnings": 13,
-    "hysteria_commit": "381bdbb6ec1d5936bdc6b7471a5da3d777452e0c",
-    "hysteria_vcs_clean": true,
-    "runtime_modules_including_app_per_abi": 21,
-    "native_abis": [
-      "arm64-v8a",
-      "x86_64"
-    ]
+    "source_tag": "ios-v0.1.0-build.8",
+    "note": "Android client source as of the same commit; no Android binary is associated with or verified for this source tag."
   },
   "hysteria": {
     "repository": "https://github.com/chromvoid/hysteria",
     "branch": "wayveil-mobile",
-    "commit": "381bdbb6ec1d5936bdc6b7471a5da3d777452e0c",
+    "commit": "91d0786404bbaefc491353da2cdf7708f3c37228",
     "upstream_base": "ca8fbd874fd6ca82413948de6dc5924405e103e1",
     "modified": true,
     "source": "third_party/hysteria",
@@ -57,7 +33,8 @@
       "github.com/apernet/hysteria/core/v2 => ../core",
       "github.com/apernet/hysteria/extras/v2 => ../extras"
     ],
-    "ios_build6_change": "Native iOS getaddrinfo with AF_UNSPEC and AI_DEFAULT for physical destination addresses, including NAT64 synthesis; profile format and routing modes unchanged."
+    "ios_build6_change": "Native iOS getaddrinfo with AF_UNSPEC and AI_DEFAULT for physical destination addresses, including NAT64 synthesis; profile format and routing modes unchanged.",
+    "build8_change": "Mobile core applies the client routing rules (routing/default-rules.json format) shared with both apps; Go dependencies unchanged from build 7."
   },
   "hev": {
     "repository": "https://github.com/heiher/hev-socks5-tunnel",
@@ -86,23 +63,17 @@
   "gradle": "9.4.1",
   "first_party_license": "MIT",
   "first_party_copyright": "Copyright (c) 2026 ChromVoid LLC",
-  "private_integration_commit": "4c2e42a12cfab82e9acdb4a8b298754e891392a5",
-  "artifact_verification": "signed iOS build-7 archive/exports and rebuilt Android version-5 packages verified against frozen source",
+  "private_integration_commit": "3e5b265",
+  "artifact_verification": "signed iOS build-8 App Store export verified: version 0.1.0 (8), strict code signature, Hysteria vcs.revision 91d0786404bbaefc491353da2cdf7708f3c37228 with vcs.modified=false",
   "original_ipa_distribution": "app-store-connect export; source publication, upload, review submission and public release are separate publisher actions",
-  "original_ipa_sha256": "35d6f211c3e248e0716fa6948886eff94ef5ade75d394ed9aede94c22faf8561",
-  "original_host_executable_sha256": "976b5e51821d5e501869c5f1c028679240f21ccf2542c5e60efc930bb44916f1",
-  "original_tunnel_executable_sha256": "7301017e3e79901a406f452bdf9259af2eeaf959956efc20c8ca044a885053b4",
-  "signed_ios_go_runtime_modules_including_app": 21,
-  "ios_source_files_frozen_before_archive_and_matched_after_export": 39,
-  "ios_runtime_source_files_frozen_and_matched_after_export": 147,
-  "ios_framework_files_frozen_and_matched_after_export": 24,
+  "original_ipa_sha256": "993ea78c6ab9b8b68ecc0bc85b5105f0a57ba0e4a0a3bbb7e2f1a531404420bd",
+  "original_host_executable_sha256": "1aab67ed98d8c8aca6d375ca28b66406c097eec347f164eea1e98099c85fae70",
+  "original_tunnel_executable_sha256": "e9e21e5e29411167998e7866c7c5083dd6db94dc58f8529b84413e3a09cd3983",
   "ios_tests": {
-    "passed": 15,
+    "passed": 25,
     "failures": 0,
     "skipped": 0,
-    "profile_tests": 8,
-    "portal_motion_tests": 7,
-    "temporary_simulator_removed": true
+    "simulator": "iOS 27.0, temporary simulator removed"
   },
-  "physical_build7_tested": false
+  "physical_build8_tested": false
 }
