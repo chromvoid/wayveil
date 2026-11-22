@@ -27,6 +27,7 @@ const (
 
 var fakeIPv4 = netip.MustParsePrefix("198.18.0.0/15")
 var fakeIPv6 = netip.MustParsePrefix("fc00::/18")
+var physicalDNSPort = "53"
 
 type fakeName struct {
 	domain  string
@@ -36,26 +37,29 @@ type fakeName struct {
 }
 
 type dnsResolver struct {
-	engine   *Engine
-	remote   *http.Client
-	direct   *http.Client
-	mu       sync.Mutex
-	byDomain map[string]*fakeName
-	byIP     map[netip.Addr]*fakeName
-	next     uint32
+	engine         *Engine
+	remote         *http.Client
+	direct         *http.Client
+	directFallback *http.Client
+	mu             sync.Mutex
+	byDomain       map[string]*fakeName
+	byIP           map[netip.Addr]*fakeName
+	next           uint32
 }
 
 func newDNSResolver(e *Engine) *dnsResolver {
 	d := &dnsResolver{engine: e, byDomain: make(map[string]*fakeName), byIP: make(map[netip.Addr]*fakeName), next: 1}
-	d.remote = dohClient(e.proxyTCPContext)
-	d.direct = dohClient(e.directTCP)
+	d.remote = dohClient(e.proxyTCPContext, "cloudflare-dns.com")
+	d.direct = dohClient(e.directTCP, "common.dot.dns.yandex.net")
+	d.directFallback = dohClient(e.directTCP, "cloudflare-dns.com")
 	return d
 }
 
-func dohClient(dial func(context.Context, string) (net.Conn, error)) *http.Client {
+func dohClient(dial func(context.Context, string) (net.Conn, error), serverName string) *http.Client {
 	transport := &http.Transport{
 		DialContext:         func(ctx context.Context, _, addr string) (net.Conn, error) { return dial(ctx, addr) },
-		TLSClientConfig:     &tls.Config{ServerName: "cloudflare-dns.com", MinVersion: tls.VersionTLS12},
+		TLSClientConfig:     &tls.Config{ServerName: serverName, MinVersion: tls.VersionTLS12},
+		ForceAttemptHTTP2:   true,
 		TLSHandshakeTimeout: 5 * time.Second,
 		DisableCompression:  true,
 		MaxIdleConns:        2,
@@ -69,6 +73,7 @@ func dohClient(dial func(context.Context, string) (net.Conn, error)) *http.Clien
 func (d *dnsResolver) close() {
 	d.remote.CloseIdleConnections()
 	d.direct.CloseIdleConnections()
+	d.directFallback.CloseIdleConnections()
 }
 
 func normalizedDomain(host string) string { return strings.TrimSuffix(strings.ToLower(host), ".") }
@@ -79,7 +84,7 @@ func (d *dnsResolver) exchange(ctx context.Context, query []byte) ([]byte, error
 		return nil, err
 	}
 	question := request.Question[0]
-	if d.engine.config.Rules.hasDirect() && d.engine.config.Rules.direct(question.Name) {
+	if rules := d.engine.rules(); rules.hasDirect() && rules.direct(question.Name) {
 		response := new(dns.Msg)
 		response.SetReply(request)
 		response.RecursionAvailable = true
@@ -98,7 +103,7 @@ func (d *dnsResolver) exchange(ctx context.Context, query []byte) ([]byte, error
 		}
 		return response.Pack()
 	}
-	return d.doh(ctx, d.remote, query, request)
+	return d.doh(ctx, d.remote, "https://1.1.1.1/dns-query", query, request)
 }
 
 func parseDNSQuery(query []byte) (*dns.Msg, error) {
@@ -115,8 +120,8 @@ func parseDNSQuery(query []byte) (*dns.Msg, error) {
 	return message, nil
 }
 
-func (d *dnsResolver) doh(ctx context.Context, client *http.Client, query []byte, message *dns.Msg) ([]byte, error) {
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, "https://1.1.1.1/dns-query", bytes.NewReader(query))
+func (d *dnsResolver) doh(ctx context.Context, client *http.Client, url string, query []byte, message *dns.Msg) ([]byte, error) {
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewReader(query))
 	if err != nil {
 		return nil, errors.New("Could not create the DNS request.")
 	}
@@ -225,21 +230,33 @@ func (d *dnsResolver) resolveDirect(ctx context.Context, host string) ([]net.IPA
 		if err != nil {
 			continue
 		}
-		payload, err := d.doh(ctx, d.direct, query, message)
-		if err != nil {
-			continue
-		}
-		answer := new(dns.Msg)
-		if answer.Unpack(payload) != nil || answer.Rcode != dns.RcodeSuccess {
-			continue
-		}
-		for _, record := range answer.Answer {
-			switch record := record.(type) {
-			case *dns.A:
-				addresses = append(addresses, net.IPAddr{IP: record.A})
-			case *dns.AAAA:
-				addresses = append(addresses, net.IPAddr{IP: record.AAAA})
+		for _, resolver := range []struct {
+			client *http.Client
+			url    string
+		}{
+			{d.direct, "https://77.88.8.8/dns-query"},
+			{d.direct, "https://77.88.8.1/dns-query"},
+			{d.directFallback, "https://1.1.1.1/dns-query"},
+		} {
+			payload, err := d.doh(ctx, resolver.client, resolver.url, query, message)
+			if err != nil {
+				continue
 			}
+			answer := new(dns.Msg)
+			if answer.Unpack(payload) != nil || answer.Rcode == dns.RcodeServerFailure || answer.Rcode == dns.RcodeRefused {
+				continue
+			}
+			if answer.Rcode == dns.RcodeSuccess {
+				for _, record := range answer.Answer {
+					switch record := record.(type) {
+					case *dns.A:
+						addresses = append(addresses, net.IPAddr{IP: record.A})
+					case *dns.AAAA:
+						addresses = append(addresses, net.IPAddr{IP: record.AAAA})
+					}
+				}
+			}
+			break
 		}
 	}
 	if len(addresses) == 0 {
@@ -248,13 +265,31 @@ func (d *dnsResolver) resolveDirect(ctx context.Context, host string) ([]net.IPA
 	return addresses, nil
 }
 
+type cdnResolveKey struct{}
+
 func (d *dnsResolver) resolvePhysical(ctx context.Context, host string) ([]net.IPAddr, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	addresses, err := d.resolveDirect(ctx, host)
+	dohCtx := ctx
+	cancel := func() {}
+	if ctx.Value(cdnResolveKey{}) != nil {
+		timeout := 5 * time.Second
+		if deadline, ok := ctx.Deadline(); ok {
+			timeout = min(timeout, time.Until(deadline)/2)
+		}
+		dohCtx, cancel = context.WithTimeout(ctx, timeout)
+	}
+	addresses, err := d.resolveDirect(dohCtx, host)
+	cancel()
 	if err != nil {
-		return nil, err
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+		addresses, err = d.resolveSystem(ctx, host)
+		if err != nil {
+			return nil, err
+		}
 	}
 	var physical []net.IPAddr
 	for _, address := range addresses {
@@ -271,4 +306,72 @@ func (d *dnsResolver) resolvePhysical(ctx context.Context, host string) ([]net.I
 		return nil, errors.New("Could not resolve the physical network address.")
 	}
 	return physical, nil
+}
+
+// Foreign platform callbacks can fail with a panic instead of a Go error.
+func physicalDNSServers(platform Platform) (servers string) {
+	defer func() {
+		if recover() != nil {
+			servers = ""
+		}
+	}()
+	if platform != nil {
+		servers = platform.PhysicalDNSServers()
+	}
+	return
+}
+
+func (d *dnsResolver) resolveSystem(ctx context.Context, host string) ([]net.IPAddr, error) {
+	var addresses []net.IPAddr
+	for _, server := range strings.Split(physicalDNSServers(d.engine.platform), ",") {
+		ip := net.ParseIP(strings.TrimSpace(server))
+		if ip == nil {
+			continue
+		}
+		for _, recordType := range []uint16{dns.TypeA, dns.TypeAAAA} {
+			query := new(dns.Msg)
+			query.SetQuestion(dns.Fqdn(host), recordType)
+			for _, network := range []string{"udp", "tcp"} {
+				if ctx.Err() != nil {
+					return nil, ctx.Err()
+				}
+				timeout := time.Second
+				if deadline, ok := ctx.Deadline(); ok {
+					timeout = min(timeout, time.Until(deadline)/2)
+				}
+				client := &dns.Client{Net: network, Timeout: timeout, Dialer: &net.Dialer{Timeout: timeout, Control: d.engine.control}}
+				conn, err := client.DialContext(ctx, net.JoinHostPort(ip.String(), physicalDNSPort))
+				if err != nil {
+					continue
+				}
+				stop := context.AfterFunc(ctx, func() { _ = conn.Close() })
+				answer, _, err := client.ExchangeWithConnContext(ctx, query, conn)
+				stop()
+				_ = conn.Close()
+				if err != nil || answer.Truncated || !answer.Response || answer.Opcode != query.Opcode || len(answer.Question) != 1 ||
+					normalizedDomain(answer.Question[0].Name) != normalizedDomain(host) || answer.Question[0].Qtype != recordType || answer.Question[0].Qclass != dns.ClassINET ||
+					answer.Rcode == dns.RcodeServerFailure || answer.Rcode == dns.RcodeRefused {
+					if ctx.Err() != nil {
+						return nil, ctx.Err()
+					}
+					continue
+				}
+				if answer.Rcode == dns.RcodeSuccess {
+					for _, record := range answer.Answer {
+						switch record := record.(type) {
+						case *dns.A:
+							addresses = append(addresses, net.IPAddr{IP: record.A})
+						case *dns.AAAA:
+							addresses = append(addresses, net.IPAddr{IP: record.AAAA})
+						}
+					}
+				}
+				break
+			}
+		}
+		if len(addresses) > 0 {
+			return addresses, nil
+		}
+	}
+	return nil, errors.New("DNS resolution failed.")
 }

@@ -4,15 +4,19 @@ import Security
 enum AppIdentity {
     static let keychainAccessGroup = Bundle.main.object(forInfoDictionaryKey: "WayveilKeychainAccessGroup") as! String
     static let tunnelIdentifier = "com.chromvoid.vpn.Tunnel"
-    static let coreVersion = "1.14.4"
+    static let coreVersion = "Hysteria2 (0f312949)"
 }
 
 enum ProfileStore {
     static let preferences = UserDefaults.standard
     private static var query: [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "com.chromvoid.vpn.profile",
+        var request: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "com.chromvoid.vpn.profile",
          kSecAttrAccount as String: "connection", kSecAttrAccessGroup as String: AppIdentity.keychainAccessGroup,
          kSecAttrSynchronizable as String: false]
+        #if os(macOS)
+        request[kSecUseDataProtectionKeychain as String] = true
+        #endif
+        return request
     }
     static func read() throws -> ConnectionProfile? {
         var request = query
@@ -38,9 +42,13 @@ enum ProfileStore {
         let status = SecItemDelete(query as CFDictionary)
         guard status == errSecSuccess || status == errSecItemNotFound else { throw storageError() }
     }
-    static var routing: RoutingMode {
-        get { RoutingMode(rawValue: preferences.string(forKey: "routing") ?? "ALL") ?? .all }
-        set { preferences.set(newValue.rawValue, forKey: "routing") }
+    static var tunnelMetricsTotals: TunnelMetricsTotals? {
+        get { preferences.data(forKey: "tunnel_metrics_totals").flatMap { try? JSONDecoder().decode(TunnelMetricsTotals.self, from: $0) } }
+        set { preferences.set(newValue.flatMap { try? JSONEncoder().encode($0) }, forKey: "tunnel_metrics_totals") }
+    }
+    static var tunnelMetricsSnapshot: TunnelMetricsSnapshot? {
+        get { preferences.data(forKey: "tunnel_metrics_snapshot").flatMap { try? JSONDecoder().decode(TunnelMetricsSnapshot.self, from: $0) } }
+        set { preferences.set(newValue.flatMap { try? JSONEncoder().encode($0) }, forKey: "tunnel_metrics_snapshot") }
     }
     private static func storageError() -> NSError {
         NSError(domain: "Wayveil", code: 1, userInfo: [NSLocalizedDescriptionKey: "Could not access the secure connection profile."])
@@ -53,9 +61,13 @@ enum RoutingOverrideStoreError: Error {
 
 enum RoutingOverrideStore {
     private static var query: [String: Any] {
-        [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "com.chromvoid.vpn.routing-overrides",
+        var request: [String: Any] = [kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: "com.chromvoid.vpn.routing-overrides",
          kSecAttrAccount as String: "overrides", kSecAttrAccessGroup as String: AppIdentity.keychainAccessGroup,
          kSecAttrSynchronizable as String: false]
+        #if os(macOS)
+        request[kSecUseDataProtectionKeychain as String] = true
+        #endif
+        return request
     }
 
     static func read() throws -> RoutingOverrides {

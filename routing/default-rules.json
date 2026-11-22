@@ -24,7 +24,20 @@
         "yandex.net",
         "yastatic.net",
         "vk.com",
-        "userapi.com"
+        "userapi.com",
+        "yandexcloud.net"
+      ],
+      "domain": []
+    },
+    {
+      "id": "ru-services",
+      "title": {
+        "ru": "Российские сервисы вне зоны .ru",
+        "en": "Russian services outside .ru"
+      },
+      "domain_suffix": [
+        "emias.info",
+        "sypexgeo.net"
       ],
       "domain": []
     }

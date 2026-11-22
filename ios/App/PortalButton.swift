@@ -14,6 +14,8 @@ enum Brand {
 
 struct PortalButton: View {
     let phase: TunnelPhase
+    /// The tunnel's live traffic in bytes per second, nil when it is not connected or not known yet.
+    let traffic: Double?
     let enabled: Bool
     let action: () -> Void
     @Environment(\.scenePhase) private var scenePhase
@@ -21,6 +23,12 @@ struct PortalButton: View {
     @State private var logoBounds = CGRect.zero
     @State private var pressed = false
     private var diameter: CGFloat { min(236, scaledDiameter) }
+    #if os(iOS)
+    private var portalActive: Bool { scenePhase == .active }
+    #else
+    // A Mac window stays on screen while another app is in front; the renderer stops when it is hidden or minimized.
+    private var portalActive: Bool { scenePhase != .background }
+    #endif
 
     var body: some View {
         GeometryReader { geometry in
@@ -30,8 +38,8 @@ struct PortalButton: View {
                 Circle().stroke(Brand.cyan.opacity(0.12), lineWidth: 1)
                     .frame(width: buttonDiameter * 1.37, height: buttonDiameter * 1.37)
                     .accessibilityHidden(true)
-                PortalEffect(phase: phase, buttonDiameter: buttonDiameter, logoBounds: logoBounds, active: scenePhase == .active,
-                             pressed: pressed)
+                PortalEffect(phase: phase, buttonDiameter: buttonDiameter, logoBounds: logoBounds, active: portalActive,
+                             pressed: pressed, traffic: traffic)
                     .allowsHitTesting(false).accessibilityHidden(true)
                 Button(action: action) {
                     VStack(spacing: 8) {

@@ -7,27 +7,51 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		04BFCBF8AEB63C3F3D1633E7 /* default-rules.json in Resources */ = {isa = PBXBuildFile; fileRef = C505F07D427B08322C9FFF82 /* default-rules.json */; };
+		090EC02E5450CCA4D0C89B57 /* NodeChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E550625DA3F2DAA0899538 /* NodeChoice.swift */; };
+		0FC168D5949658E9F0DAB959 /* VPNControlValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8129BE910CC2E06C57226EB0 /* VPNControlValue.swift */; };
+		10092C546A57085D405F4ACC /* WayveilControls.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 4BB29FBF5046CFA6F4EDAE72 /* WayveilControls.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		1444CCC316D2116E62197D88 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E9870F8DC1635549A5DCD2D /* UIKit.framework */; };
 		14893CA3F15590794F6B0432 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E9870F8DC1635549A5DCD2D /* UIKit.framework */; };
+		15715824D6BFE2C57136186F /* Access.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F0F5909413BF3B13FCE2BE /* Access.swift */; };
+		189D3529541856D82053991B /* Access.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F0F5909413BF3B13FCE2BE /* Access.swift */; };
 		19F88DB9E6ADC23EFE0E2FBA /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2BDF30C2B6787B785E3FE /* Network.framework */; };
 		1FF2404C86D1C44598DC5152 /* PortalMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66B637F29242DC50938E5FF /* PortalMotion.swift */; };
 		230B65936737E966C5C531D9 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB5D2736109D73FF802FB014 /* Localizable.strings */; };
+		23356197917EBDBDCC3671B8 /* WayveilControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3C3306B10C644961B818FA0 /* WayveilControls.swift */; };
 		256B16087FE32DAA471B0A82 /* WayveilCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */; };
 		2EF761CF6E24865B0533013A /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
 		313F377E8BDA22B482BD5E55 /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
 		32C13D97588B61804D2D4701 /* TunnelConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539ED89716837C08372C8356 /* TunnelConfiguration.swift */; };
+		37EA827E0A5E329690BA04B0 /* TunnelMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B706D40BF36A4786A6440B /* TunnelMetrics.swift */; };
 		3CA15F07CD71E6E1458D091A /* PacketTunnelProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C54CE86672A9C07E558FE22 /* PacketTunnelProvider.swift */; };
 		47963E9E1D133228B5ECA814 /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
 		491D042981B8B58FBD0CFD61 /* TunnelConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539ED89716837C08372C8356 /* TunnelConfiguration.swift */; };
+		4D4BF1B390E7C5C97B779250 /* AccessHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9142428E3B581A34BA5DF03C /* AccessHTTPClient.swift */; };
+		4FCBE6D3B7C7A41523FB3484 /* VPNControlValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8129BE910CC2E06C57226EB0 /* VPNControlValue.swift */; };
+		510791D1BEC0461B230084B5 /* VPNControlValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8129BE910CC2E06C57226EB0 /* VPNControlValue.swift */; };
+		592CD41F7E1B9C7283AFDB25 /* AccessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4306A74C1618F1A25D893C04 /* AccessManager.swift */; };
 		59F3E6E9438496F37AE4154D /* VPNController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B570BD50F853DFC6A072932C /* VPNController.swift */; };
 		5C3D7F0EF3DA81E5CB6088AD /* PortalShader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 854A279299A955A157ABB08A /* PortalShader.metal */; };
+		5F92543A4F5E865DE7F626FE /* VPNControlValue.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8129BE910CC2E06C57226EB0 /* VPNControlValue.swift */; };
+		60C47236FE999227D28328FD /* TunnelMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B706D40BF36A4786A6440B /* TunnelMetrics.swift */; };
 		6A7A0CC368FA09D258DD0A52 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
+		6CEC97069C67A129F4F442CB /* NodeProbe.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32A46260A0F8C4C05A1A3EE3 /* NodeProbe.swift */; };
 		6FAC77AEF36F63325E8AA099 /* PortalMotion.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66B637F29242DC50938E5FF /* PortalMotion.swift */; };
 		73F6B2BEFDD51942FC607345 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE8B3E9C4115C0941C9B8B7F /* ContentView.swift */; };
+		74DE7B6D09A5781298988852 /* AccessHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9142428E3B581A34BA5DF03C /* AccessHTTPClient.swift */; };
 		74F3632755E102F38B874E54 /* QRScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3081244A8599A915894C5CE0 /* QRScanner.swift */; };
+		7627F26F4DCC2AD498DEA1AA /* NodeChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E550625DA3F2DAA0899538 /* NodeChoice.swift */; };
+		796E7327E873B981A6580915 /* default-rules.json in Resources */ = {isa = PBXBuildFile; fileRef = 858EF7FF6F403C5519D7B8CC /* default-rules.json */; };
+		7E97B9800F6F5FF7CC83E183 /* NodeChoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65E550625DA3F2DAA0899538 /* NodeChoice.swift */; };
+		7EB6AB9F24465AC17E11907D /* Access.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53F0F5909413BF3B13FCE2BE /* Access.swift */; };
+		821EFDC2DD243CC878867395 /* OpenWayveilToConnectIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482C20FB2F795D4C79D6EA11 /* OpenWayveilToConnectIntent.swift */; };
+		82B124161C4AC3516ECE3DCD /* AccessHTTPClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9142428E3B581A34BA5DF03C /* AccessHTTPClient.swift */; };
+		82C8FB0D3CA68347743DC6CF /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
 		83F1B2E8206FB724B8611B34 /* PortalEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6E8AF73505F456C6069FECB /* PortalEffect.swift */; };
 		878CC0DC31C508DE64F15BBC /* TunnelPlatform.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8388C7E26FFB535762C05C2E /* TunnelPlatform.swift */; };
+		885BDAAEF1CD0A1B0A26D73E /* TunnelMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B706D40BF36A4786A6440B /* TunnelMetrics.swift */; };
+		8DFA4FC04A8A2271953AD429 /* AppUpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C561467F9BF4959EF4CBBEE1 /* AppUpdateCheck.swift */; };
+		902A80D638A6B3BC92ABECE8 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
 		94AF04377D3F2F8FC2C48D73 /* PacketTunnel.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		96EA716B1F154482E47B6CF7 /* ProfileTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E45BE23F2BF3D20006A62F2 /* ProfileTests.swift */; };
 		9BC56546EC591585EA6BDA15 /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
@@ -35,23 +59,38 @@
 		9DFB4952CEF0BF1A8D6830B5 /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
 		9EBBC252E1CED2B644313C7B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 2FD1A942E067DD47B3849171 /* InfoPlist.strings */; };
 		A6E71D811AA4B487038582AF /* ProfileStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 891CDE3335485A300A2BA2EB /* ProfileStore.swift */; };
+		A6EC3D86F445ED3AC27DE076 /* AppUpdateCheck.swift in Sources */ = {isa = PBXBuildFile; fileRef = C561467F9BF4959EF4CBBEE1 /* AppUpdateCheck.swift */; };
 		A99395DB8689883F027CE897 /* PortalMotionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CB9D6529B3BAD2120A920BB /* PortalMotionTests.swift */; };
-		AA1BA158F2E651CF5B6F774A /* default-rules.json in Resources */ = {isa = PBXBuildFile; fileRef = C505F07D427B08322C9FFF82 /* default-rules.json */; };
+		AAAF20047E89CB86D2364FCF /* AccessPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A7719D100191F51B9FB19 /* AccessPresentation.swift */; };
+		B043E12065B8E02D6EAC8679 /* AccessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4306A74C1618F1A25D893C04 /* AccessManager.swift */; };
+		B1473339C916C6EE523026D3 /* default-rules.json in Resources */ = {isa = PBXBuildFile; fileRef = 858EF7FF6F403C5519D7B8CC /* default-rules.json */; };
+		B1E36790D0F84ECE6AA0FC4A /* RoutingRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */; };
+		B3D94FF9ACD672B8D3579CC7 /* AccessStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18BC20E39A5C0BC4D882A15 /* AccessStore.swift */; };
 		B90C7AFB445B2E666347E327 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
 		B944196F250FE4FBFE329537 /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 92A2622C37A43EDF8BD8BC83 /* MetalKit.framework */; };
+		BBB4B083DE83209D84A74CF6 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = CB5D2736109D73FF802FB014 /* Localizable.strings */; };
 		BC06B51097D9D1AAC304328B /* TunnelConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539ED89716837C08372C8356 /* TunnelConfiguration.swift */; };
 		BF2A05F4510111F453F6E17D /* PortalButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A29A8CE54864B5198B4B805A /* PortalButton.swift */; };
 		C32249CADBC8A0164F38440E /* ImportProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C33AF60D5C9CE91BED130D38 /* ImportProfileView.swift */; };
+		C5A8E01300925A191F19B5BF /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = CADDCC859422124E1676D43B /* PrivacyInfo.xcprivacy */; };
 		C740D3CD2D120311FCFB6325 /* HevSocks5Tunnel.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */; };
+		C8E5221E9C1FA2D5B6D76051 /* AccessManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4306A74C1618F1A25D893C04 /* AccessManager.swift */; };
 		CC75464F7122C4D85E15391A /* WayveilCore.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */; };
 		D0478BECDF865B91A7072525 /* ConnectionProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629A28251E90E25223F78604 /* ConnectionProfile.swift */; };
+		D60071B501BA05B090CB9BE8 /* NodeChoiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCA25E54AC4840A68F9FCD09 /* NodeChoiceTests.swift */; };
 		D6D8FAF12439C778631A8427 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */; };
 		D711EA58E50311BD3B976E12 /* WayveilApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8226212B56DA290CE043BC0F /* WayveilApp.swift */; };
 		D928BA40CAA2A85A7BF42996 /* HevSocks5Tunnel.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */; };
+		DCFCD6F059C649B73F02BF67 /* AppUpdateCheckTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 779AD1CD6D41FF672DE7004D /* AppUpdateCheckTests.swift */; };
 		E0B6929450A695251B7BF040 /* Network.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = DFD2BDF30C2B6787B785E3FE /* Network.framework */; };
+		E15BAA948ADA2B4971CCD7D7 /* TunnelMetrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47B706D40BF36A4786A6440B /* TunnelMetrics.swift */; };
 		E5B4DFE173123CD5C964720A /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */; };
+		E8C040A2C3FEE03A4C23EB41 /* AccessStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18BC20E39A5C0BC4D882A15 /* AccessStore.swift */; };
 		F384905F89988D2AB2F812C9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 51CA4C1DA049095B452436D1 /* Assets.xcassets */; };
 		F3A8B7FB76A6E6488C4E7BF7 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C264DF0D76E728C3E9FCE476 /* CoreMotion.framework */; };
+		F3C479F6DA677C22A07FF48E /* AccessPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F0A7719D100191F51B9FB19 /* AccessPresentation.swift */; };
+		F5E79D5FA90E33826D28C269 /* OpenWayveilToConnectIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 482C20FB2F795D4C79D6EA11 /* OpenWayveilToConnectIntent.swift */; };
+		F707D0AD985CE3FD9E309B7D /* AccessStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A18BC20E39A5C0BC4D882A15 /* AccessStore.swift */; };
 		FD1CBB707E5B68BA2B639584 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 988DFC5E2B8B8D4328832CE4 /* LaunchScreen.storyboard */; };
 /* End PBXBuildFile section */
 
@@ -70,6 +109,13 @@
 			remoteGlobalIDString = 7D896B92E69E4F06DC60EB3F;
 			remoteInfo = Wayveil;
 		};
+		C1D25EEC598B201D79AAF4BD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = F8C2698482377B4524AC10E6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6B6CC135F7C332517B92F1E9;
+			remoteInfo = WayveilControls;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -80,6 +126,7 @@
 			dstSubfolderSpec = 13;
 			files = (
 				94AF04377D3F2F8FC2C48D73 /* PacketTunnel.appex in Embed Foundation Extensions */,
+				10092C546A57085D405F4ACC /* WayveilControls.appex in Embed Foundation Extensions */,
 			);
 			name = "Embed Foundation Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -87,28 +134,41 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		2F0A7719D100191F51B9FB19 /* AccessPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessPresentation.swift; sourceTree = "<group>"; };
 		3081244A8599A915894C5CE0 /* QRScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScanner.swift; sourceTree = "<group>"; };
+		32A46260A0F8C4C05A1A3EE3 /* NodeProbe.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeProbe.swift; sourceTree = "<group>"; };
 		3E45BE23F2BF3D20006A62F2 /* ProfileTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileTests.swift; sourceTree = "<group>"; };
 		3E536CF43C3320F74B0B3D4A /* WayveilTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = WayveilTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		3F345B709CE0BB0D00838070 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		4306A74C1618F1A25D893C04 /* AccessManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessManager.swift; sourceTree = "<group>"; };
+		47B706D40BF36A4786A6440B /* TunnelMetrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunnelMetrics.swift; sourceTree = "<group>"; };
+		482C20FB2F795D4C79D6EA11 /* OpenWayveilToConnectIntent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenWayveilToConnectIntent.swift; sourceTree = "<group>"; };
 		4B5014EEFD914D791EC4A765 /* ThirdPartyNotices.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = ThirdPartyNotices.txt; sourceTree = "<group>"; };
+		4BB29FBF5046CFA6F4EDAE72 /* WayveilControls.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = WayveilControls.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		51CA4C1DA049095B452436D1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		51D3D442368B239D69FE590A /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/Localizable.strings; sourceTree = "<group>"; };
 		539ED89716837C08372C8356 /* TunnelConfiguration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunnelConfiguration.swift; sourceTree = "<group>"; };
 		53B80A67D2886CF1A95DC775 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		53F0F5909413BF3B13FCE2BE /* Access.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Access.swift; sourceTree = "<group>"; };
 		629A28251E90E25223F78604 /* ConnectionProfile.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionProfile.swift; sourceTree = "<group>"; };
 		64D9EBECF30AA3D93A927AAE /* Wayveil.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wayveil.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		65E550625DA3F2DAA0899538 /* NodeChoice.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeChoice.swift; sourceTree = "<group>"; };
 		6C54CE86672A9C07E558FE22 /* PacketTunnelProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PacketTunnelProvider.swift; sourceTree = "<group>"; };
+		779AD1CD6D41FF672DE7004D /* AppUpdateCheckTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCheckTests.swift; sourceTree = "<group>"; };
 		7BD86798C5C00B087DF3E587 /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		7CB9D6529B3BAD2120A920BB /* PortalMotionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMotionTests.swift; sourceTree = "<group>"; };
 		7E9870F8DC1635549A5DCD2D /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
+		8129BE910CC2E06C57226EB0 /* VPNControlValue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VPNControlValue.swift; sourceTree = "<group>"; };
 		8226212B56DA290CE043BC0F /* WayveilApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WayveilApp.swift; sourceTree = "<group>"; };
 		8388C7E26FFB535762C05C2E /* TunnelPlatform.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TunnelPlatform.swift; sourceTree = "<group>"; };
 		854A279299A955A157ABB08A /* PortalShader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = PortalShader.metal; sourceTree = "<group>"; };
+		858EF7FF6F403C5519D7B8CC /* default-rules.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "default-rules.json"; sourceTree = "<group>"; };
 		862C07355EB1FB3F3B68C57F /* HevSocks5Tunnel.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = HevSocks5Tunnel.xcframework; path = Frameworks/HevSocks5Tunnel.xcframework; sourceTree = "<group>"; };
 		891CDE3335485A300A2BA2EB /* ProfileStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileStore.swift; sourceTree = "<group>"; };
+		9142428E3B581A34BA5DF03C /* AccessHTTPClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessHTTPClient.swift; sourceTree = "<group>"; };
 		92A2622C37A43EDF8BD8BC83 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
 		988DFC5E2B8B8D4328832CE4 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A18BC20E39A5C0BC4D882A15 /* AccessStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessStore.swift; sourceTree = "<group>"; };
 		A29A8CE54864B5198B4B805A /* PortalButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalButton.swift; sourceTree = "<group>"; };
 		A66B637F29242DC50938E5FF /* PortalMotion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalMotion.swift; sourceTree = "<group>"; };
 		ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = PacketTunnel.appex; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -116,11 +176,14 @@
 		C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoutingRules.swift; sourceTree = "<group>"; };
 		C264DF0D76E728C3E9FCE476 /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		C33AF60D5C9CE91BED130D38 /* ImportProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImportProfileView.swift; sourceTree = "<group>"; };
-		C505F07D427B08322C9FFF82 /* default-rules.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "default-rules.json"; sourceTree = "<group>"; };
+		C3C3306B10C644961B818FA0 /* WayveilControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WayveilControls.swift; sourceTree = "<group>"; };
+		C561467F9BF4959EF4CBBEE1 /* AppUpdateCheck.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppUpdateCheck.swift; sourceTree = "<group>"; };
+		CADDCC859422124E1676D43B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		DFD2BDF30C2B6787B785E3FE /* Network.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Network.framework; path = System/Library/Frameworks/Network.framework; sourceTree = SDKROOT; };
 		E7762ECAAF3D35CF8D6EEE23 /* WayveilCore.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = WayveilCore.xcframework; path = Frameworks/WayveilCore.xcframework; sourceTree = "<group>"; };
 		EFA6B98FC37E00F2471A3975 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		F6E8AF73505F456C6069FECB /* PortalEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PortalEffect.swift; sourceTree = "<group>"; };
+		FCA25E54AC4840A68F9FCD09 /* NodeChoiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NodeChoiceTests.swift; sourceTree = "<group>"; };
 		FE8B3E9C4115C0941C9B8B7F /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -159,30 +222,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		00C663AC53D7CBA51BEC6EDF /* wayveil */ = {
-			isa = PBXGroup;
-			children = (
-				690262625B4E53E9937044AD /* routing */,
-			);
-			name = wayveil;
-			path = ..;
-			sourceTree = "<group>";
-		};
 		3BF2BC30F55A09DEA8FA83AA /* Tunnel */ = {
 			isa = PBXGroup;
 			children = (
+				32A46260A0F8C4C05A1A3EE3 /* NodeProbe.swift */,
 				6C54CE86672A9C07E558FE22 /* PacketTunnelProvider.swift */,
 				8388C7E26FFB535762C05C2E /* TunnelPlatform.swift */,
 			);
 			path = Tunnel;
 			sourceTree = "<group>";
 		};
-		690262625B4E53E9937044AD /* routing */ = {
+		47BE3089ADD4EDFE45BE2AC5 /* Controls */ = {
 			isa = PBXGroup;
 			children = (
-				C505F07D427B08322C9FFF82 /* default-rules.json */,
+				482C20FB2F795D4C79D6EA11 /* OpenWayveilToConnectIntent.swift */,
+				CADDCC859422124E1676D43B /* PrivacyInfo.xcprivacy */,
+				C3C3306B10C644961B818FA0 /* WayveilControls.swift */,
 			);
-			path = routing;
+			path = Controls;
 			sourceTree = "<group>";
 		};
 		6981C43A14B3D7565B5BDA8E /* Products */ = {
@@ -190,6 +247,7 @@
 			children = (
 				ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */,
 				64D9EBECF30AA3D93A927AAE /* Wayveil.app */,
+				4BB29FBF5046CFA6F4EDAE72 /* WayveilControls.appex */,
 				3E536CF43C3320F74B0B3D4A /* WayveilTests.xctest */,
 			);
 			name = Products;
@@ -198,10 +256,17 @@
 		8BD45DC8CD69DFCAF7EFC81A /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				53F0F5909413BF3B13FCE2BE /* Access.swift */,
+				9142428E3B581A34BA5DF03C /* AccessHTTPClient.swift */,
+				4306A74C1618F1A25D893C04 /* AccessManager.swift */,
+				A18BC20E39A5C0BC4D882A15 /* AccessStore.swift */,
 				629A28251E90E25223F78604 /* ConnectionProfile.swift */,
+				65E550625DA3F2DAA0899538 /* NodeChoice.swift */,
 				891CDE3335485A300A2BA2EB /* ProfileStore.swift */,
 				C0A489F5A6C7FBF184E16547 /* RoutingRules.swift */,
 				539ED89716837C08372C8356 /* TunnelConfiguration.swift */,
+				47B706D40BF36A4786A6440B /* TunnelMetrics.swift */,
+				8129BE910CC2E06C57226EB0 /* VPNControlValue.swift */,
 			);
 			path = Shared;
 			sourceTree = "<group>";
@@ -210,18 +275,30 @@
 			isa = PBXGroup;
 			children = (
 				A1ED51F7C64E6350BB82DC29 /* App */,
+				47BE3089ADD4EDFE45BE2AC5 /* Controls */,
+				9AA04B0386685CC593DF2F61 /* routing */,
 				8BD45DC8CD69DFCAF7EFC81A /* Shared */,
 				A01944ACD14F010FC5F801CB /* Tests */,
 				3BF2BC30F55A09DEA8FA83AA /* Tunnel */,
-				00C663AC53D7CBA51BEC6EDF /* wayveil */,
 				A4190959061F8CA43CA866BC /* Frameworks */,
 				6981C43A14B3D7565B5BDA8E /* Products */,
 			);
 			sourceTree = "<group>";
 		};
+		9AA04B0386685CC593DF2F61 /* routing */ = {
+			isa = PBXGroup;
+			children = (
+				858EF7FF6F403C5519D7B8CC /* default-rules.json */,
+			);
+			name = routing;
+			path = ../routing;
+			sourceTree = "<group>";
+		};
 		A01944ACD14F010FC5F801CB /* Tests */ = {
 			isa = PBXGroup;
 			children = (
+				779AD1CD6D41FF672DE7004D /* AppUpdateCheckTests.swift */,
+				FCA25E54AC4840A68F9FCD09 /* NodeChoiceTests.swift */,
 				7CB9D6529B3BAD2120A920BB /* PortalMotionTests.swift */,
 				3E45BE23F2BF3D20006A62F2 /* ProfileTests.swift */,
 			);
@@ -231,6 +308,8 @@
 		A1ED51F7C64E6350BB82DC29 /* App */ = {
 			isa = PBXGroup;
 			children = (
+				2F0A7719D100191F51B9FB19 /* AccessPresentation.swift */,
+				C561467F9BF4959EF4CBBEE1 /* AppUpdateCheck.swift */,
 				FE8B3E9C4115C0941C9B8B7F /* ContentView.swift */,
 				C33AF60D5C9CE91BED130D38 /* ImportProfileView.swift */,
 				A29A8CE54864B5198B4B805A /* PortalButton.swift */,
@@ -293,6 +372,24 @@
 			productReference = ABE2BF9F584870D9C7540DB2 /* PacketTunnel.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		6B6CC135F7C332517B92F1E9 /* WayveilControls */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 179E9070D08938FAD67F7927 /* Build configuration list for PBXNativeTarget "WayveilControls" */;
+			buildPhases = (
+				40D1A2A29D5C5B38B22F219E /* Sources */,
+				BD1D52FE4DB44AF5C43A7F68 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WayveilControls;
+			packageProductDependencies = (
+			);
+			productName = WayveilControls;
+			productReference = 4BB29FBF5046CFA6F4EDAE72 /* WayveilControls.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		6E156569545D68E631723186 /* WayveilTests */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = FF8C4DEC897C667C078CBADC /* Build configuration list for PBXNativeTarget "WayveilTests" */;
@@ -325,6 +422,7 @@
 			);
 			dependencies = (
 				2D3D3039305F28B549BC566B /* PBXTargetDependency */,
+				19B5D01CCF5B7A2DFAB71473 /* PBXTargetDependency */,
 			);
 			name = Wayveil;
 			packageProductDependencies = (
@@ -343,6 +441,9 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					25A509A060DE3D82AC31DD14 = {
+						ProvisioningStyle = Automatic;
+					};
+					6B6CC135F7C332517B92F1E9 = {
 						ProvisioningStyle = Automatic;
 					};
 					6E156569545D68E631723186 = {
@@ -369,6 +470,7 @@
 			projectRoot = "";
 			targets = (
 				7D896B92E69E4F06DC60EB3F /* Wayveil */,
+				6B6CC135F7C332517B92F1E9 /* WayveilControls */,
 				25A509A060DE3D82AC31DD14 /* PacketTunnel */,
 				6E156569545D68E631723186 /* WayveilTests */,
 			);
@@ -381,7 +483,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E5B4DFE173123CD5C964720A /* PrivacyInfo.xcprivacy in Resources */,
-				04BFCBF8AEB63C3F3D1633E7 /* default-rules.json in Resources */,
+				796E7327E873B981A6580915 /* default-rules.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -395,24 +497,58 @@
 				230B65936737E966C5C531D9 /* Localizable.strings in Resources */,
 				D6D8FAF12439C778631A8427 /* PrivacyInfo.xcprivacy in Resources */,
 				9BDDA031B5D7CC38A14DE41A /* ThirdPartyNotices.txt in Resources */,
-				AA1BA158F2E651CF5B6F774A /* default-rules.json in Resources */,
+				B1473339C916C6EE523026D3 /* default-rules.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BD1D52FE4DB44AF5C43A7F68 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BBB4B083DE83209D84A74CF6 /* Localizable.strings in Resources */,
+				C5A8E01300925A191F19B5BF /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		40D1A2A29D5C5B38B22F219E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				902A80D638A6B3BC92ABECE8 /* ConnectionProfile.swift in Sources */,
+				F5E79D5FA90E33826D28C269 /* OpenWayveilToConnectIntent.swift in Sources */,
+				82C8FB0D3CA68347743DC6CF /* ProfileStore.swift in Sources */,
+				B1E36790D0F84ECE6AA0FC4A /* RoutingRules.swift in Sources */,
+				37EA827E0A5E329690BA04B0 /* TunnelMetrics.swift in Sources */,
+				5F92543A4F5E865DE7F626FE /* VPNControlValue.swift in Sources */,
+				23356197917EBDBDCC3671B8 /* WayveilControls.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		71CE0D0BB6C841E96346F5F9 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EB6AB9F24465AC17E11907D /* Access.swift in Sources */,
+				82B124161C4AC3516ECE3DCD /* AccessHTTPClient.swift in Sources */,
+				B043E12065B8E02D6EAC8679 /* AccessManager.swift in Sources */,
+				AAAF20047E89CB86D2364FCF /* AccessPresentation.swift in Sources */,
+				E8C040A2C3FEE03A4C23EB41 /* AccessStore.swift in Sources */,
+				8DFA4FC04A8A2271953AD429 /* AppUpdateCheck.swift in Sources */,
+				DCFCD6F059C649B73F02BF67 /* AppUpdateCheckTests.swift in Sources */,
 				D0478BECDF865B91A7072525 /* ConnectionProfile.swift in Sources */,
+				7627F26F4DCC2AD498DEA1AA /* NodeChoice.swift in Sources */,
+				D60071B501BA05B090CB9BE8 /* NodeChoiceTests.swift in Sources */,
 				6FAC77AEF36F63325E8AA099 /* PortalMotion.swift in Sources */,
 				A99395DB8689883F027CE897 /* PortalMotionTests.swift in Sources */,
 				9BC56546EC591585EA6BDA15 /* ProfileStore.swift in Sources */,
 				96EA716B1F154482E47B6CF7 /* ProfileTests.swift in Sources */,
 				47963E9E1D133228B5ECA814 /* RoutingRules.swift in Sources */,
 				BC06B51097D9D1AAC304328B /* TunnelConfiguration.swift in Sources */,
+				E15BAA948ADA2B4971CCD7D7 /* TunnelMetrics.swift in Sources */,
+				510791D1BEC0461B230084B5 /* VPNControlValue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -420,12 +556,20 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				189D3529541856D82053991B /* Access.swift in Sources */,
+				74DE7B6D09A5781298988852 /* AccessHTTPClient.swift in Sources */,
+				C8E5221E9C1FA2D5B6D76051 /* AccessManager.swift in Sources */,
+				F707D0AD985CE3FD9E309B7D /* AccessStore.swift in Sources */,
 				B90C7AFB445B2E666347E327 /* ConnectionProfile.swift in Sources */,
+				7E97B9800F6F5FF7CC83E183 /* NodeChoice.swift in Sources */,
+				6CEC97069C67A129F4F442CB /* NodeProbe.swift in Sources */,
 				3CA15F07CD71E6E1458D091A /* PacketTunnelProvider.swift in Sources */,
 				2EF761CF6E24865B0533013A /* ProfileStore.swift in Sources */,
 				313F377E8BDA22B482BD5E55 /* RoutingRules.swift in Sources */,
 				491D042981B8B58FBD0CFD61 /* TunnelConfiguration.swift in Sources */,
+				60C47236FE999227D28328FD /* TunnelMetrics.swift in Sources */,
 				878CC0DC31C508DE64F15BBC /* TunnelPlatform.swift in Sources */,
+				0FC168D5949658E9F0DAB959 /* VPNControlValue.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,9 +577,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				15715824D6BFE2C57136186F /* Access.swift in Sources */,
+				4D4BF1B390E7C5C97B779250 /* AccessHTTPClient.swift in Sources */,
+				592CD41F7E1B9C7283AFDB25 /* AccessManager.swift in Sources */,
+				F3C479F6DA677C22A07FF48E /* AccessPresentation.swift in Sources */,
+				B3D94FF9ACD672B8D3579CC7 /* AccessStore.swift in Sources */,
+				A6EC3D86F445ED3AC27DE076 /* AppUpdateCheck.swift in Sources */,
 				6A7A0CC368FA09D258DD0A52 /* ConnectionProfile.swift in Sources */,
 				73F6B2BEFDD51942FC607345 /* ContentView.swift in Sources */,
 				C32249CADBC8A0164F38440E /* ImportProfileView.swift in Sources */,
+				090EC02E5450CCA4D0C89B57 /* NodeChoice.swift in Sources */,
+				821EFDC2DD243CC878867395 /* OpenWayveilToConnectIntent.swift in Sources */,
 				BF2A05F4510111F453F6E17D /* PortalButton.swift in Sources */,
 				83F1B2E8206FB724B8611B34 /* PortalEffect.swift in Sources */,
 				1FF2404C86D1C44598DC5152 /* PortalMotion.swift in Sources */,
@@ -444,6 +596,8 @@
 				74F3632755E102F38B874E54 /* QRScanner.swift in Sources */,
 				9DFB4952CEF0BF1A8D6830B5 /* RoutingRules.swift in Sources */,
 				32C13D97588B61804D2D4701 /* TunnelConfiguration.swift in Sources */,
+				885BDAAEF1CD0A1B0A26D73E /* TunnelMetrics.swift in Sources */,
+				4FCBE6D3B7C7A41523FB3484 /* VPNControlValue.swift in Sources */,
 				59F3E6E9438496F37AE4154D /* VPNController.swift in Sources */,
 				D711EA58E50311BD3B976E12 /* WayveilApp.swift in Sources */,
 			);
@@ -452,6 +606,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		19B5D01CCF5B7A2DFAB71473 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6B6CC135F7C332517B92F1E9 /* WayveilControls */;
+			targetProxy = C1D25EEC598B201D79AAF4BD /* PBXContainerItemProxy */;
+		};
 		2D3D3039305F28B549BC566B /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 25A509A060DE3D82AC31DD14 /* PacketTunnel */;
@@ -564,7 +723,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -579,7 +738,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -590,6 +749,24 @@
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
+		};
+		50A0533D80B13997BDF87E8F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Configuration/Controls.entitlements;
+				INFOPLIST_FILE = "Configuration/Controls-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn.Controls;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
 		};
 		7CFD756430F7E97D03C461C8 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -626,7 +803,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 8;
+				CURRENT_PROJECT_VERSION = 9;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -647,7 +824,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
-				MARKETING_VERSION = 0.1.0;
+				MARKETING_VERSION = 0.1.1;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -698,6 +875,24 @@
 					"@executable_path/Frameworks",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		A1131B88E895AB2D519BCAF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = Configuration/Controls.entitlements;
+				INFOPLIST_FILE = "Configuration/Controls-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.chromvoid.vpn.Controls;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -758,6 +953,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		179E9070D08938FAD67F7927 /* Build configuration list for PBXNativeTarget "WayveilControls" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				50A0533D80B13997BDF87E8F /* Debug */,
+				A1131B88E895AB2D519BCAF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		4F9B7CC277B64593D8CC4EBC /* Build configuration list for PBXProject "Wayveil" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

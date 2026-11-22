@@ -1,10 +1,5 @@
 .local/
 ios/Frameworks/
-android/.gradle/
-android/**/build/
-android/local.properties
-android/app/libs/
-android/app/src/main/jniLibs/
 third_party/hev/**/build/
 third_party/hev/bin/
 third_party/hev/obj/

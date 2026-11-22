@@ -8,8 +8,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net"
 	"net/http"
+	"reflect"
+	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -19,12 +23,15 @@ import (
 
 	"github.com/apernet/hysteria/app/v2/internal/socks5"
 	"github.com/apernet/hysteria/core/v2/client"
+	coreErrs "github.com/apernet/hysteria/core/v2/errors"
 	"github.com/apernet/hysteria/extras/v2/obfs"
 )
 
-// Platform protects and binds an Internet socket to the physical network before use.
+// Platform protects sockets and supplies DNS servers for the physical network.
 type Platform interface {
 	ProtectSocket(fd int64) error
+	// PhysicalDNSServers returns comma-separated IP literals, or empty if unavailable.
+	PhysicalDNSServers() string
 }
 
 type profile struct {
@@ -39,9 +46,13 @@ type profile struct {
 }
 
 type mobileConfig struct {
-	Profile profile       `json:"profile"`
-	Routing string        `json:"routing"`
-	Rules   *routingRules `json:"rules"`
+	Profile           profile       `json:"profile"`
+	Endpoints         []endpoint    `json:"endpoints"`
+	PreferredEndpoint string        `json:"preferred_endpoint"`
+	WhitelistMode     bool          `json:"whitelist_mode"`
+	AdaptiveEndpoints bool          `json:"adaptive_endpoints"` // See attemptOrder.
+	Routing           string        `json:"routing"`
+	Rules             *routingRules `json:"rules"`
 }
 
 func parseConfig(text string) (mobileConfig, error) {
@@ -58,16 +69,24 @@ func parseConfig(text string) (mobileConfig, error) {
 	if err := c.Rules.compile(); err != nil {
 		return c, err
 	}
-	p := &c.Profile
-	if p.Version != 1 || p.Server == "" || strings.ContainsAny(p.Server, "/\\\r\n\t ") || p.Port < 1 || p.Port > 65535 || p.Password == "" ||
-		(c.Routing != "ALL" && c.Routing != "RUSSIAN_DIRECT") || (p.ObfsPassword != "" && len(p.ObfsPassword) < 4) {
+	if c.Routing != "ALL" && c.Routing != "RUSSIAN_DIRECT" {
 		return c, errors.New("Invalid VPN configuration.")
 	}
-	if p.ServerName == "" {
-		p.ServerName = p.Server
+	if len(c.Endpoints) == 0 {
+		p := &c.Profile
+		if p.Version != 1 || p.Server == "" || strings.ContainsAny(p.Server, "/\\\r\n\t ") || p.Port < 1 || p.Port > 65535 || p.Password == "" ||
+			(p.ObfsPassword != "" && len(p.ObfsPassword) < 4) {
+			return c, errors.New("Invalid VPN configuration.")
+		}
+		if p.ServerName == "" {
+			p.ServerName = p.Server
+		}
+		if p.Certificate != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(p.Certificate)) {
+			return c, errors.New("The server certificate is invalid.")
+		}
 	}
-	if p.Certificate != "" && !x509.NewCertPool().AppendCertsFromPEM([]byte(p.Certificate)) {
-		return c, errors.New("The server certificate is invalid.")
+	if err := c.validateEndpoints(); err != nil {
+		return c, err
 	}
 	return c, nil
 }
@@ -78,28 +97,44 @@ func Validate(configJSON string) error {
 	return err
 }
 
-// Engine runs the MIT Hysteria2 transport and a loopback SOCKS5 endpoint for HEV.
+type vpnTransport interface {
+	TCPContext(context.Context, string) (net.Conn, error)
+	UDP() (client.HyUDPConn, error)
+	Close() error
+}
+
+// Engine runs the selected VPN transport and a loopback SOCKS5 endpoint for HEV.
 type Engine struct {
-	config   mobileConfig
+	config   mobileConfig // Guarded by mu after Start; read it with snapshot.
 	platform Platform
 	ctx      context.Context
 	cancel   context.CancelFunc
 	listener net.Listener
 	dns      *dnsResolver
 
+	// Lock order: switching (a try-only flag, never waited on) → reconnectMu → mu → flowMu; history.mu comes last and nothing is locked under it.
 	mu          sync.RWMutex
-	hy          client.Client
+	hy          vpnTransport
+	activeID    string
+	lastGoodID  string
+	activeSince time.Time // Wall time activeID became active; zero when the run is not judged.
 	closed      bool
 	reconnectMu sync.Mutex
+	switching   atomic.Bool
+	history     endpointHistory
 	flowMu      sync.Mutex
 	flows       map[io.Closer]struct{}
 	generation  atomic.Uint64
 	tx          atomic.Int64
 	rx          atomic.Int64
+	proxyTx     atomic.Int64
+	proxyRx     atomic.Int64
+	download    downloadStats
 }
 
-// Start authenticates the Hysteria2 transport and opens a loopback-only endpoint.
+// Start verifies an endpoint's data transfer and opens a loopback-only SOCKS endpoint.
 func Start(configJSON string, platform Platform) (*Engine, error) {
+	lastStartReport.Store("[]")
 	c, err := parseConfig(configJSON)
 	if err != nil {
 		return nil, err
@@ -109,11 +144,15 @@ func Start(configJSON string, platform Platform) (*Engine, error) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	e := &Engine{config: c, platform: platform, ctx: ctx, cancel: cancel, flows: make(map[io.Closer]struct{})}
+	e.download.started = time.Now()
 	e.generation.Store(1)
 	e.dns = newDNSResolver(e)
-	if err := e.connect(); err != nil {
+	if err := e.connect(c.PreferredEndpoint); err != nil {
 		_ = e.Close()
-		return nil, errors.New("Could not authenticate the VPN transport. Check the profile and network.")
+		if errors.Is(err, errEndpointAuth) {
+			return nil, errEndpointAuth
+		}
+		return nil, errEndpointCheck
 	}
 	listener, err := net.Listen("tcp4", "127.0.0.1:0")
 	if err != nil {
@@ -128,13 +167,198 @@ func Start(configJSON string, platform Platform) (*Engine, error) {
 	return e, nil
 }
 
-func (e *Engine) connect() error {
-	p := e.config.Profile
-	ctx, cancel := context.WithTimeout(e.ctx, 8*time.Second)
+// Tests replace the URL with a loopback server to avoid external network access.
+var healthProbeURL = "https://speed.cloudflare.com/__down?bytes=65536"
+
+// Each endpoint gets up to endpointTimeout. A connect call's budget covers
+// every endpoint it tries, at least connectTimeout and at most maxConnectTimeout.
+var endpointTimeout = 10 * time.Second
+var connectTimeout = 30 * time.Second
+var maxConnectTimeout = 60 * time.Second
+var wallNow = func() time.Time { return time.Now().Round(0) }
+
+var errEndpointAuth = errors.New("Could not authenticate the VPN transport. Check the profile and network.")
+var errEndpointCheck = errors.New("No VPN endpoint passed the data transfer check.")
+
+type endpointAttempt struct {
+	ID    string `json:"id"`
+	Kind  string `json:"kind"`
+	Stage string `json:"stage"`
+	MS    int64  `json:"ms"`
+}
+
+var lastStartReport atomic.Value // JSON string, shared across engines.
+
+// LastStartReport returns endpoint IDs, kinds, stages and wall-clock durations
+// from the latest Start or Reconnect attempt, without connection details.
+func LastStartReport() string {
+	if report := lastStartReport.Load(); report != nil {
+		return report.(string)
+	}
+	return "[]"
+}
+
+type endpointStageError struct {
+	stage string
+	err   error
+}
+
+func (e endpointStageError) Error() string {
+	if e.stage == "resolve" {
+		return "Could not resolve the VPN server."
+	}
+	return "The VPN transport connection failed."
+}
+
+func (e endpointStageError) Unwrap() error { return e.err }
+
+type connectDeadlineKey struct{}
+
+// Go's monotonic timers may pause during device sleep. Check wall time at
+// stage boundaries as well, before starting any more network work.
+func connectContextError(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if deadline, ok := ctx.Value(connectDeadlineKey{}).(time.Time); ok && !wallNow().Before(deadline) {
+		return context.DeadlineExceeded
+	}
+	return nil
+}
+
+func (e *Engine) connect(first string) error {
+	config := e.snapshot()
+	endpoints := e.attemptOrder(config, first)
+	budget := min(max(time.Duration(len(endpoints))*endpointTimeout, connectTimeout), maxConnectTimeout)
+	deadline := wallNow().Add(budget)
+	ctx, cancel := context.WithTimeout(e.ctx, budget)
 	defer cancel()
+	ctx = context.WithValue(ctx, connectDeadlineKey{}, deadline)
+	report := make([]endpointAttempt, 0, len(endpoints))
+	defer func() {
+		encoded, _ := json.Marshal(report)
+		lastStartReport.Store(string(encoded))
+	}()
+	allAuth := true
+	for i, p := range endpoints {
+		if err := connectContextError(ctx); err != nil {
+			for _, remaining := range endpoints[i:] {
+				// An endpoint the deadline kept from being tried has not failed.
+				report = append(report, endpointAttempt{ID: remaining.ID, Kind: remaining.Kind, Stage: "deadline"})
+			}
+			if i > 0 && allAuth {
+				return errEndpointAuth
+			}
+			// Clients fall back to their last path only on errEndpointCheck.
+			if i > 0 && errors.Is(err, context.DeadlineExceeded) {
+				return errEndpointCheck
+			}
+			return err
+		}
+		started := wallNow()
+		attemptCtx, attemptCancel := context.WithTimeout(ctx, min(endpointTimeout, deadline.Sub(started)))
+		stage := "handshake"
+		transport, err := e.newTransport(attemptCtx, p)
+		if err != nil {
+			var stageErr endpointStageError
+			var authErr coreErrs.AuthError
+			if errors.As(err, &stageErr) {
+				stage = stageErr.stage
+			}
+			if errors.As(err, &authErr) {
+				stage = "auth"
+			}
+		} else {
+			err = connectContextError(attemptCtx)
+		}
+		if err == nil {
+			stage = "probe"
+			err = probeEndpoint(attemptCtx, transport)
+			if err == nil {
+				err = connectContextError(attemptCtx)
+			}
+		}
+		attemptCancel()
+		if err == nil {
+			stage = "ok"
+		}
+		if err != nil && transport != nil {
+			_ = transport.Close()
+		}
+		report = append(report, endpointAttempt{ID: p.ID, Kind: p.Kind, Stage: stage, MS: max(0, wallNow().Sub(started).Milliseconds())})
+		allAuth = allAuth && stage == "auth"
+		if err != nil {
+			// A start that Close cut short says nothing about the endpoint.
+			if config.AdaptiveEndpoints && e.ctx.Err() == nil {
+				e.history.startFailed(p.ID, wallNow())
+			}
+			continue
+		}
+		// Without adaptive endpoints the clock is read exactly as before.
+		var since time.Time
+		if config.AdaptiveEndpoints {
+			since = wallNow()
+		}
+		e.mu.Lock()
+		if e.closed || e.ctx.Err() != nil {
+			e.mu.Unlock()
+			_ = transport.Close()
+			return net.ErrClosed
+		}
+		e.hy, e.activeID, e.lastGoodID, e.activeSince = transport, p.ID, p.ID, since
+		e.mu.Unlock()
+		if config.AdaptiveEndpoints {
+			e.history.started(p.ID)
+		}
+		return nil
+	}
+	if len(report) > 0 && allAuth {
+		return errEndpointAuth
+	}
+	return errEndpointCheck
+}
+
+func (e *Engine) newTransport(ctx context.Context, p endpoint) (vpnTransport, error) {
+	if p.Kind == "hysteria2" {
+		return e.newHysteriaTransport(ctx, p)
+	}
+	return e.newXrayTransport(ctx, p)
+}
+
+// Probe sockets belong to the transport, outside the old generation's flow set.
+type probeTransportKey struct{}
+
+func probeEndpoint(ctx context.Context, transport vpnTransport) error {
+	httpTransport := &http.Transport{DisableKeepAlives: true, DisableCompression: true,
+		DialContext: func(ctx context.Context, _, addr string) (net.Conn, error) {
+			return transport.TCPContext(ctx, addr)
+		}}
+	defer httpTransport.CloseIdleConnections()
+	request, err := http.NewRequestWithContext(ctx, http.MethodGet, healthProbeURL, nil)
+	if err != nil {
+		return err
+	}
+	response, err := (&http.Client{Transport: httpTransport,
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}).Do(request)
+	if err != nil {
+		return err
+	}
+	defer response.Body.Close()
+	if response.StatusCode != http.StatusOK {
+		return errors.New("The VPN data transfer check was rejected.")
+	}
+	_, err = io.CopyN(io.Discard, response.Body, 65536)
+	return err
+}
+
+func (e *Engine) newHysteriaTransport(ctx context.Context, p endpoint) (vpnTransport, error) {
 	addresses, err := e.dns.resolvePhysical(ctx, p.Server)
 	if err != nil {
-		return errors.New("Could not resolve the VPN server.")
+		return nil, endpointStageError{stage: "resolve", err: err}
+	}
+	if err := connectContextError(ctx); err != nil {
+		return nil, endpointStageError{stage: "resolve", err: err}
 	}
 	ip := addresses[0].IP
 	var roots *x509.CertPool
@@ -145,7 +369,7 @@ func (e *Engine) connect() error {
 	c := &client.Config{
 		ServerAddr: &net.UDPAddr{IP: ip, Port: p.Port}, Auth: p.Password,
 		TLSConfig:   client.TLSConfig{ServerName: p.ServerName, RootCAs: roots},
-		ConnFactory: &packetFactory{engine: e},
+		ConnFactory: &packetFactory{engine: e, obfsPassword: p.ObfsPassword, untracked: ctx.Value(probeTransportKey{}) != nil},
 		QUICConfig: client.QUICConfig{
 			InitialStreamReceiveWindow: 256 * 1024, MaxStreamReceiveWindow: 512 * 1024,
 			InitialConnectionReceiveWindow: 1024 * 1024, MaxConnectionReceiveWindow: 2 * 1024 * 1024,
@@ -154,20 +378,29 @@ func (e *Engine) connect() error {
 	}
 	hy, handshake, err := client.NewClientContext(ctx, c)
 	if err != nil {
-		return errors.New("The VPN transport connection failed.")
+		return nil, endpointStageError{stage: "handshake", err: err}
+	}
+	if err := connectContextError(ctx); err != nil {
+		_ = hy.Close()
+		return nil, endpointStageError{stage: "handshake", err: err}
 	}
 	if !handshake.UDPEnabled {
 		_ = hy.Close()
-		return errors.New("The VPN server does not allow UDP.")
+		return nil, errors.New("The VPN server does not allow UDP.")
 	}
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.closed || e.ctx.Err() != nil {
+	transport, ok := hy.(vpnTransport)
+	if !ok {
 		_ = hy.Close()
-		return net.ErrClosed
+		return nil, errors.New("The VPN transport does not support cancellation.")
 	}
-	e.hy = hy
-	return nil
+	return transport, nil
+}
+
+// ActiveEndpoint returns the selected endpoint ID, or an empty string when disconnected.
+func (e *Engine) ActiveEndpoint() string {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	return e.activeID
 }
 
 // SocksPort is the loopback TCP port consumed by the native HEV adapter.
@@ -178,12 +411,17 @@ func (e *Engine) SocksPort() int64 {
 	return int64(e.listener.Addr().(*net.TCPAddr).Port)
 }
 
+// HEV's own default task stack. A 64-datagram UDP send batch puts about 24 KiB of
+// headers and iovecs on the stack, which overflowed the 24 KiB low-memory size and
+// crashed the packet thread. Stacks are mapped lazily, so unused pages cost nothing.
+const hevTaskStackSize = 86016
+
 // HEVConfig contains only local packet-adapter settings, never server credentials.
 func (e *Engine) HEVConfig() string {
-	return fmt.Sprintf("tunnel:\n  name: wayveil\n  mtu: 1400\n  ipv4: 172.19.0.1\n  ipv6: 'fdfe:dcba:9876::1'\nsocks5:\n  address: 127.0.0.1\n  port: %d\n  udp: udp\nmisc:\n  task-stack-size: 24576\n  tcp-buffer-size: 4096\n  max-session-count: 512\n  connect-timeout: 10000\n  tcp-read-write-timeout: 300000\n  udp-read-write-timeout: 60000\n  log-file: /dev/null\n  log-level: error\n", e.SocksPort())
+	return fmt.Sprintf("tunnel:\n  name: wayveil\n  mtu: 1400\n  ipv4: 172.19.0.1\n  ipv6: 'fdfe:dcba:9876::1'\nsocks5:\n  address: 127.0.0.1\n  port: %d\n  udp: udp\nmisc:\n  task-stack-size: %d\n  tcp-buffer-size: 4096\n  max-session-count: 512\n  connect-timeout: 10000\n  tcp-read-write-timeout: 300000\n  udp-read-write-timeout: 60000\n  log-file: /dev/null\n  log-level: error\n", e.SocksPort(), hevTaskStackSize)
 }
 
-// Check verifies fresh HTTPS over the Hysteria2 transport, independent of bypass rules.
+// Check verifies fresh HTTPS over the active transport, independent of bypass rules.
 func (e *Engine) Check() error {
 	ctx, cancel := context.WithTimeout(e.ctx, 8*time.Second)
 	defer cancel()
@@ -208,28 +446,198 @@ func (e *Engine) Check() error {
 	return nil
 }
 
+// Ping measures a TCP open, or a data transfer check for CDN transports.
+func (e *Engine) Ping() (int64, error) {
+	e.mu.RLock()
+	hy, closed := e.hy, e.closed
+	e.mu.RUnlock()
+	if closed {
+		return 0, errors.New("The VPN engine is closed.")
+	}
+	if hy == nil {
+		return 0, errors.New("The VPN transport is not connected.")
+	}
+	ctx, cancel := context.WithTimeout(e.ctx, 5*time.Second)
+	defer cancel()
+	if transport, ok := hy.(*xrayTransport); ok && transport.ping == nil {
+		started := time.Now()
+		if err := probeEndpoint(ctx, hy); err != nil {
+			return 0, errors.New("The VPN latency check failed.")
+		}
+		return max(1, int64((time.Since(started)+time.Millisecond-1)/time.Millisecond)), nil
+	}
+	dial := hy.TCPContext
+	if transport, ok := hy.(interface {
+		PingTCPContext(context.Context, string) (net.Conn, error)
+	}); ok {
+		dial = transport.PingTCPContext
+	}
+	started := time.Now()
+	conn, err := dial(ctx, "1.1.1.1:443")
+	elapsed := time.Since(started)
+	if err != nil {
+		return 0, errors.New("The VPN latency check failed.")
+	}
+	_ = conn.Close()
+	return max(1, int64((elapsed+time.Millisecond-1)/time.Millisecond)), nil
+}
+
 // Reconnect replaces the network transport while keeping HEV's listener address stable.
 func (e *Engine) Reconnect() error {
 	e.reconnectMu.Lock()
 	defer e.reconnectMu.Unlock()
+	lastStartReport.Store("[]")
 	e.mu.Lock()
 	if e.closed {
 		e.mu.Unlock()
 		return net.ErrClosed
 	}
 	hy := e.hy
+	first := e.lastGoodID
+	active, since, adaptive := e.activeID, e.activeSince, e.config.AdaptiveEndpoints
 	e.hy = nil
+	e.activeID = ""
 	e.generation.Add(1)
 	e.mu.Unlock()
+	if adaptive {
+		e.history.ended(active, since, wallNow(), true)
+	}
 	e.closeFlows()
 	if hy != nil {
 		_ = hy.Close()
 	}
 	e.dns.close()
-	if err := e.connect(); err != nil {
+	if err := e.connect(first); err != nil {
 		return errors.New("Could not reconnect the VPN transport.")
 	}
 	return nil
+}
+
+// TrySwitch probes an endpoint without interrupting traffic, then replaces the transport.
+func (e *Engine) TrySwitch(id string) bool {
+	if !e.switching.CompareAndSwap(false, true) {
+		return false
+	}
+	defer e.switching.Store(false)
+	e.mu.RLock()
+	closed, active, gen, config := e.closed, e.activeID, e.generation.Load(), e.config
+	e.mu.RUnlock()
+	if closed || active == "" || active == id {
+		return false
+	}
+	var point endpoint
+	for _, p := range config.Endpoints {
+		if p.ID == id {
+			point = p
+			break
+		}
+	}
+	if point.ID == "" {
+		return false
+	}
+	ctx, cancel := context.WithTimeout(e.ctx, 10*time.Second)
+	transport, err := e.newTransport(context.WithValue(ctx, probeTransportKey{}, true), point)
+	if err == nil {
+		err = probeEndpoint(ctx, transport)
+	}
+	cancel()
+	if err != nil {
+		if transport != nil {
+			_ = transport.Close()
+		}
+		if config.AdaptiveEndpoints && e.ctx.Err() == nil {
+			e.history.startFailed(id, wallNow())
+		}
+		return false
+	}
+	return e.promote(transport, id, gen, config.AdaptiveEndpoints)
+}
+
+// promote replaces the active transport with a probed one unless Close or
+// Reconnect has started a new generation since gen was read.
+func (e *Engine) promote(transport vpnTransport, id string, gen uint64, adaptive bool) bool {
+	e.reconnectMu.Lock()
+	defer e.reconnectMu.Unlock()
+	var since time.Time
+	if adaptive {
+		since = wallNow()
+	}
+	e.mu.Lock()
+	if e.closed || e.generation.Load() != gen {
+		e.mu.Unlock()
+		_ = transport.Close()
+		return false
+	}
+	old, oldID, oldSince := e.hy, e.activeID, e.activeSince
+	// Snapshot before publishing the new generation so new flows survive the swap.
+	e.flowMu.Lock()
+	flows := make([]io.Closer, 0, len(e.flows))
+	for flow := range e.flows {
+		flows = append(flows, flow)
+	}
+	e.generation.Add(1)
+	e.hy, e.activeID, e.lastGoodID, e.activeSince = transport, id, id, since
+	e.flowMu.Unlock()
+	e.mu.Unlock()
+	if adaptive {
+		// Leaving an endpoint on purpose is not a drop, but a long run still clears its penalties.
+		e.history.ended(oldID, oldSince, since, false)
+		e.history.started(id)
+	}
+	for _, flow := range flows {
+		_ = flow.Close()
+	}
+	if old != nil {
+		_ = old.Close()
+	}
+	e.dns.close()
+	return true
+}
+
+// snapshot returns the whole configuration as one consistent value. Refresh
+// replaces the configuration but never modifies a published one in place.
+func (e *Engine) snapshot() mobileConfig {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	return e.config
+}
+
+// rules returns the routing rules, which Refresh never changes.
+func (e *Engine) rules() *routingRules {
+	e.mu.RLock()
+	defer e.mu.RUnlock()
+	return e.config.Rules
+}
+
+var errRefreshChanged = errors.New("The refreshed VPN configuration changes more than endpoint passwords. Restart the VPN to apply it.")
+
+// Refresh replaces endpoint passwords for future Reconnect and TrySwitch calls.
+// The active transport, its flows and the SOCKS endpoint stay as they are. Any
+// other change, except the preferred endpoint, is rejected without effect.
+func (e *Engine) Refresh(configJSON string) error {
+	next, err := parseConfig(configJSON)
+	if err != nil {
+		return err
+	}
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	if e.closed {
+		return net.ErrClosed
+	}
+	if !reflect.DeepEqual(withoutRefreshable(e.config), withoutRefreshable(next)) {
+		return errRefreshChanged
+	}
+	e.config = next
+	return nil
+}
+
+func withoutRefreshable(c mobileConfig) mobileConfig {
+	c.Profile.Password, c.PreferredEndpoint = "", ""
+	c.Endpoints = slices.Clone(c.Endpoints)
+	for i := range c.Endpoints {
+		c.Endpoints[i].Password = ""
+	}
+	return c
 }
 
 // Close stops listeners, accepted flows, DNS requests and the encrypted transport.
@@ -242,6 +650,7 @@ func (e *Engine) Close() error {
 	e.closed = true
 	hy := e.hy
 	e.hy = nil
+	e.activeID = ""
 	e.cancel()
 	e.generation.Add(1)
 	e.mu.Unlock()
@@ -260,7 +669,112 @@ func (e *Engine) Close() error {
 
 func (e *Engine) TxBytes() int64 { return e.tx.Load() }
 func (e *Engine) RxBytes() int64 { return e.rx.Load() }
-func Version() string            { return "Hysteria2 2.13.0 / Wayveil HEV" }
+
+// ProxyTxBytes returns TCP and UDP payload bytes sent through the VPN since Start.
+func (e *Engine) ProxyTxBytes() int64 { return e.proxyTx.Load() }
+
+// ProxyRxBytes returns TCP and UDP payload bytes received through the VPN since Start.
+func (e *Engine) ProxyRxBytes() int64 { return e.proxyRx.Load() }
+
+// DownloadMedianBps returns the histogram midpoint for completed active seconds.
+func (e *Engine) DownloadMedianBps() int64 {
+	e.download.advance(e.download.now())
+	return e.download.median.Load()
+}
+
+// DownloadPeakBps returns the highest VPN payload byte count in a completed active second.
+func (e *Engine) DownloadPeakBps() int64 {
+	e.download.advance(e.download.now())
+	return e.download.peak.Load()
+}
+
+func Version() string { return "Hysteria2 2.13.0 / Wayveil HEV 2" }
+
+const minimumDownloadBytes = 64 * 1024
+
+// Eight buckets per doubling give a 9.05% step, capped at 2 GB/s.
+var downloadBounds = func() [121]int64 {
+	var bounds [121]int64
+	for i := range bounds {
+		bounds[i] = min(2_000_000_000, int64(minimumDownloadBytes*math.Exp2(float64(i)/8)))
+	}
+	return bounds
+}()
+
+type downloadStats struct {
+	started time.Time
+	clock   func() int64 // Test clock, in elapsed monotonic seconds.
+	second  atomic.Int64
+	readers atomic.Int64
+	bytes   atomic.Int64
+	median  atomic.Int64
+	peak    atomic.Int64
+	mu      sync.Mutex
+	buckets [120]uint64
+	samples uint64
+}
+
+func (d *downloadStats) now() int64 {
+	if d.clock != nil {
+		return d.clock()
+	}
+	return int64(time.Since(d.started) / time.Second)
+}
+
+func (e *Engine) recordProxyRead(n int64) {
+	if n <= 0 {
+		return
+	}
+	e.proxyRx.Add(n)
+	d := &e.download
+	for {
+		d.readers.Add(1)
+		second := d.now()
+		if second <= d.second.Load() {
+			d.bytes.Add(n)
+			d.readers.Add(-1)
+			return
+		}
+		d.readers.Add(-1)
+		d.advance(second)
+	}
+}
+
+func (d *downloadStats) advance(second int64) {
+	if second <= d.second.Load() {
+		return
+	}
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if second <= d.second.Load() {
+		return
+	}
+	// Block new writers, then drain writers that already validated the old second.
+	// No timer or background goroutine is needed to finish an interval.
+	d.second.Store(-1)
+	for d.readers.Load() != 0 {
+		runtime.Gosched()
+	}
+	n := d.bytes.Swap(0)
+	if n >= minimumDownloadBytes {
+		bucket := 0
+		for bucket < len(d.buckets)-1 && n >= downloadBounds[bucket+1] {
+			bucket++
+		}
+		d.buckets[bucket]++
+		d.samples++
+		d.peak.Store(max(d.peak.Load(), n))
+		var count uint64
+		for i, samples := range d.buckets {
+			count += samples
+			if count >= (d.samples+1)/2 {
+				d.median.Store((downloadBounds[i] + downloadBounds[i+1]) / 2)
+				break
+			}
+		}
+	}
+	d.second.Store(second)
+}
 
 func (e *Engine) proxyTCP(addr string) (net.Conn, error) {
 	ctx, cancel := context.WithTimeout(e.ctx, 10*time.Second)
@@ -276,17 +790,16 @@ func (e *Engine) proxyTCPContext(ctx context.Context, addr string) (net.Conn, er
 	if hy == nil {
 		return nil, net.ErrClosed
 	}
-	dialer, ok := hy.(interface {
-		TCPContext(context.Context, string) (net.Conn, error)
-	})
-	if !ok {
-		return nil, errors.New("The VPN transport does not support cancellation.")
-	}
-	conn, err := dialer.TCPContext(ctx, addr)
+	conn, err := hy.TCPContext(ctx, addr)
 	if err != nil {
 		return nil, errors.New("The VPN TCP connection failed.")
 	}
-	return e.trackConn(conn, false, gen)
+	tracked, err := e.trackConn(conn, false, gen)
+	if err != nil {
+		return nil, err
+	}
+	tracked.(*trackedConn).proxy = true
+	return tracked, nil
 }
 
 func (e *Engine) directTCP(ctx context.Context, addr string) (net.Conn, error) {
@@ -348,7 +861,14 @@ func (e *Engine) closeFlows() {
 	}
 }
 
-type packetFactory struct{ engine *Engine }
+// udpSocketBuffer is the size quic-go asks for on a socket of its own.
+const udpSocketBuffer = 7 << 20
+
+type packetFactory struct {
+	engine       *Engine
+	obfsPassword string
+	untracked    bool
+}
 
 func (f *packetFactory) New(addr net.Addr) (net.PacketConn, error) {
 	e := f.engine
@@ -362,12 +882,19 @@ func (f *packetFactory) New(addr net.Addr) (net.PacketConn, error) {
 	if err != nil {
 		return nil, errors.New("Could not open the VPN transport socket.")
 	}
+	// quic-go enlarges the buffers only of a socket it can see, and ours is wrapped. With the
+	// default 208 KB a Linux gateway dropped thousands of packets in one fast download.
+	// The system caps the size, so a refusal changes nothing.
+	if udp, ok := conn.(*net.UDPConn); ok {
+		_ = udp.SetReadBuffer(udpSocketBuffer)
+		_ = udp.SetWriteBuffer(udpSocketBuffer)
+	}
 	tracked := &trackedPacket{PacketConn: conn, engine: e}
-	if !e.addFlow(tracked, gen) {
+	if !f.untracked && !e.addFlow(tracked, gen) {
 		_ = conn.Close()
 		return nil, net.ErrClosed
 	}
-	if password := e.config.Profile.ObfsPassword; password != "" {
+	if password := f.obfsPassword; password != "" {
 		wrapped, err := obfs.WrapPacketConnSalamander(tracked, []byte(password))
 		if err != nil {
 			_ = tracked.Close()
@@ -404,6 +931,7 @@ type trackedConn struct {
 	net.Conn
 	engine *Engine
 	count  bool
+	proxy  bool
 	once   sync.Once
 }
 
@@ -420,12 +948,18 @@ func (c *trackedConn) Read(b []byte) (int, error) {
 	if c.count {
 		c.engine.rx.Add(int64(n))
 	}
+	if c.proxy {
+		c.engine.recordProxyRead(int64(n))
+	}
 	return n, err
 }
 func (c *trackedConn) Write(b []byte) (int, error) {
 	n, err := c.Conn.Write(b)
 	if c.count {
 		c.engine.tx.Add(int64(n))
+	}
+	if c.proxy {
+		c.engine.proxyTx.Add(int64(n))
 	}
 	return n, err
 }

@@ -35,7 +35,7 @@ func (c *routedClient) TCP(addr string) (net.Conn, error) {
 		defer cancel()
 		return e.directTCP(ctx, address)
 	}
-	if e.config.Rules.hasDirect() && net.ParseIP(host) != nil {
+	if e.rules().hasDirect() && net.ParseIP(host) != nil {
 		return e.sniffTCP(address)
 	}
 	return e.proxyTCP(address)
@@ -54,7 +54,7 @@ func (e *Engine) sniffTCP(address string) (net.Conn, error) {
 		payload, host := sniffDestination(peer)
 		var outbound net.Conn
 		var err error
-		if e.config.Rules.direct(host) {
+		if e.rules().direct(host) {
 			ctx, cancel := context.WithTimeout(e.ctx, 10*time.Second)
 			outbound, err = e.directTCP(ctx, address)
 			cancel()
@@ -99,7 +99,7 @@ func (e *Engine) destination(host string, port int) (string, bool, error) {
 		}
 		host = domain
 	}
-	return net.JoinHostPort(host, strconv.Itoa(port)), e.config.Rules.direct(host), nil
+	return net.JoinHostPort(host, strconv.Itoa(port)), e.rules().direct(host), nil
 }
 
 func (e *Engine) dnsTCP() (net.Conn, error) {
@@ -212,7 +212,7 @@ func (u *routedUDP) Send(data []byte, addr string) error {
 	if direct {
 		return u.sendDirect(data, addr, address)
 	}
-	if u.engine.config.Rules.hasDirect() && net.ParseIP(host) != nil {
+	if u.engine.rules().hasDirect() && net.ParseIP(host) != nil {
 		return u.sniffUDP(data, addr, address)
 	}
 	hy, err := u.proxySession()
@@ -247,6 +247,7 @@ func (u *routedUDP) proxySession() (client.HyUDPConn, error) {
 	if err != nil {
 		return nil, errors.New("Could not open the VPN UDP session.")
 	}
+	hy = &proxyUDP{HyUDPConn: hy, engine: u.engine}
 	u.mu.Lock()
 	defer u.mu.Unlock()
 	if u.closed {
@@ -267,6 +268,25 @@ func (u *routedUDP) proxySession() (client.HyUDPConn, error) {
 		}
 	}()
 	return hy, nil
+}
+
+type proxyUDP struct {
+	client.HyUDPConn
+	engine *Engine
+}
+
+func (u *proxyUDP) Send(data []byte, addr string) error {
+	if err := u.HyUDPConn.Send(data, addr); err != nil {
+		return err
+	}
+	u.engine.proxyTx.Add(int64(len(data)))
+	return nil
+}
+
+func (u *proxyUDP) Receive() ([]byte, string, error) {
+	data, addr, err := u.HyUDPConn.Receive()
+	u.engine.recordProxyRead(int64(len(data)))
+	return data, addr, err
 }
 
 func (u *routedUDP) sendDirect(data []byte, original, address string) error {

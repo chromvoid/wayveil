@@ -1,40 +1,37 @@
 {
   "application": "Wayveil",
   "platforms": [
-    "iOS",
-    "Android"
+    "iOS"
   ],
-  "version": "0.1.0",
-  "build": "8",
-  "source_tag": "ios-v0.1.0-build.8",
+  "version": "0.1.1",
+  "build": "9",
+  "source_tag": "ios-v0.1.1-build.9",
   "ios": {
-    "version": "0.1.0",
-    "build": "8",
-    "bundle_identifier": "com.chromvoid.vpn",
-    "original_ipa_distribution": "app-store-connect export; upload and review submission are separate publisher actions",
-    "hysteria_commit": "91d0786404bbaefc491353da2cdf7708f3c37228",
-    "hysteria_vcs_clean": true
-  },
-  "android": {
     "version": "0.1.1",
-    "version_code": 6,
-    "application_id": "com.chromvoid.wayveil",
-    "source_tag": "ios-v0.1.0-build.8",
-    "note": "Android client source as of the same commit; no Android binary is associated with or verified for this source tag."
+    "build": "9",
+    "bundle_identifier": "com.chromvoid.vpn",
+    "deployment_target": "16.0",
+    "controls_deployment_target": "18.0"
   },
   "hysteria": {
     "repository": "https://github.com/chromvoid/hysteria",
-    "branch": "wayveil-mobile",
-    "commit": "91d0786404bbaefc491353da2cdf7708f3c37228",
-    "upstream_base": "ca8fbd874fd6ca82413948de6dc5924405e103e1",
-    "modified": true,
+    "commit": "0f3129498a2022aca3cd82e513c80595b0313d99",
     "source": "third_party/hysteria",
+    "scope": "Mobile package and tests, required app, core and extras sources, vendored Go dependencies and binding tools.",
     "app_vendor_local_replacements": [
       "github.com/apernet/hysteria/core/v2 => ../core",
       "github.com/apernet/hysteria/extras/v2 => ../extras"
     ],
-    "ios_build6_change": "Native iOS getaddrinfo with AF_UNSPEC and AI_DEFAULT for physical destination addresses, including NAT64 synthesis; profile format and routing modes unchanged.",
-    "build8_change": "Mobile core applies the client routing rules (routing/default-rules.json format) shared with both apps; Go dependencies unchanged from build 7."
+    "test_adjustments": "Example endpoint values in dns_test.go and -mod=vendor for its dependency check."
+  },
+  "xray": {
+    "module": "github.com/xtls/xray-core",
+    "version": "v1.260327.0",
+    "repository": "https://github.com/chromvoid/Xray-core",
+    "replacement_version": "v0.0.0-20261114193945-c8acf0a4a9ab",
+    "commit": "c8acf0a4a9ab4a26f6108a1ade355d8ffda513de",
+    "module_sum": "h1:eLXSDH723G4NwULfsjHm8R5DXXjro3cTe1714bXCY1c=",
+    "source": "third_party/hysteria/app/vendor/github.com/xtls/xray-core"
   },
   "hev": {
     "repository": "https://github.com/heiher/hev-socks5-tunnel",
@@ -50,30 +47,19 @@
     "patch": "native/hev/hev-reset-stop.patch",
     "patch_sha256": "c54bea5ad12ce314070b9bb1588d248c2be603ba488cc00898e6d1e1c9d81066",
     "patch_already_applied": true,
-    "excluded_unused_subtree": "third-part/wintun",
-    "android_jni": "native/hev/hev-jni.c",
-    "upstream_application_jni_excluded": true
+    "excluded_unused_subtree": "third-part/wintun"
   },
   "go": "1.27.3",
   "gomobile": "0.1.12",
-  "xcode": "27.0",
+  "xcode": "27.2",
   "xcodegen": "2.46.0",
-  "android_sdk": 36,
-  "android_ndk": "29.0.13846066",
-  "gradle": "9.4.1",
-  "first_party_license": "MIT",
-  "first_party_copyright": "Copyright (c) 2026 ChromVoid LLC",
-  "private_integration_commit": "3e5b265",
-  "artifact_verification": "signed iOS build-8 App Store export verified: version 0.1.0 (8), strict code signature, Hysteria vcs.revision 91d0786404bbaefc491353da2cdf7708f3c37228 with vcs.modified=false",
-  "original_ipa_distribution": "app-store-connect export; source publication, upload, review submission and public release are separate publisher actions",
-  "original_ipa_sha256": "993ea78c6ab9b8b68ecc0bc85b5105f0a57ba0e4a0a3bbb7e2f1a531404420bd",
-  "original_host_executable_sha256": "1aab67ed98d8c8aca6d375ca28b66406c097eec347f164eea1e98099c85fae70",
-  "original_tunnel_executable_sha256": "e9e21e5e29411167998e7866c7c5083dd6db94dc58f8529b84413e3a09cd3983",
+  "build_verification": "Unsigned arm64 iOS Release build of Wayveil with PacketTunnel and WayveilControls",
   "ios_tests": {
-    "passed": 25,
+    "passed": 102,
     "failures": 0,
     "skipped": 0,
-    "simulator": "iOS 27.0, temporary simulator removed"
+    "simulator": "iOS 27.2 (24B8117)"
   },
-  "physical_build8_tested": false
+  "first_party_license": "MIT",
+  "first_party_copyright": "Copyright (c) 2026 ChromVoid LLC"
 }

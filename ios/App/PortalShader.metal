@@ -2,7 +2,8 @@
 #include <metal_stdlib>
 using namespace metal;
 
-// Matches PortalEffect.Uniforms: 192 bytes, tilt at 32, logoRect at 48, press at 68, packets at 80, light at 176.
+// Matches PortalEffect.Uniforms: 256 bytes, tilt at 32, logoRect at 48, press at 68, packets at 80, light at 176,
+// traffic at 192, ripples at 208.
 struct PortalUniforms {
     float2 resolution;
     float scale;
@@ -27,6 +28,15 @@ struct PortalUniforms {
     // The portal's one light, placed by PortalLight: the unit vector towards it (x right, y up, z towards the viewer),
     // and in w how far tilt has drawn it down.
     float4 light;
+    // Connected traffic, placed by PortalFlow: 0 when there is none, 1 from about 2 MB/s on a logarithmic scale; drift is
+    // how far it has carried the packets that run through the passage.
+    float traffic;
+    float drift;
+    // Rises and falls about twelve times a minute while connected, 0...1.
+    float breath;
+    // Ripples that traffic drops into the membrane, placed by PortalFlow: the unit vector to where each fell on the rim,
+    // its age in seconds, and its strength, 0 once it has died away.
+    float4 ripples[3];
 };
 
 struct PortalVertex {
@@ -40,26 +50,15 @@ vertex PortalVertex portalVertex(uint index [[vertex_id]]) {
 
 constant float PI = 3.14159265;
 constexpr sampler logoSampler(coord::normalized, address::clamp_to_edge, filter::linear);
-constexpr sampler latticeSampler(coord::normalized, address::repeat, filter::linear);
+constexpr sampler noiseSampler(coord::normalized, address::repeat, filter::linear);
 float hash(float2 p) {
   p = fract(p * float2(123.34, 456.21));
   p += dot(p, p + 45.32);
   return fract(p.x * p.y);
 }
-// The lattice texture holds value-noise hashes at its texel centres (see PortalEffect.Renderer), so linear filtering does the mixing.
-float noise(texture2d<float> lattice, float2 p) {
-  float2 i = floor(p), f = fract(p);
-  f = f * f * (3.0 - 2.0 * f);
-  return lattice.sample(latticeSampler, (i + f + 0.5) / 256.0).r;
-}
-float fbm(texture2d<float> lattice, float2 p) {
-  float f = 0.0, amplitude = 0.5;
-  for (int i = 0; i < 4; i++) {
-    f += amplitude * noise(lattice, p);
-    p = float2x2(1.6, 1.2, -1.2, 1.6) * p + 3.1;
-    amplitude *= 0.5;
-  }
-  return f;
+// Four octaves of value noise, baked by PortalNoise into a texture of 16 noise cells to a side.
+float fbm(texture2d<float> noise, float2 p) {
+  return noise.sample(noiseSampler, p / 16.0).r;
 }
 float band(float d, float width) { return exp(-d * d / (width * width)); }
 float2 turn(float2 v, float a) {
@@ -84,7 +83,7 @@ float logoCover(texture2d<float> logoMask, float2 glyph, float spin, float blur,
   return min(mask, 1.0);
 }
 fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUniforms &uniforms [[buffer(0)]],
-                              texture2d<float> logoMask [[texture(0)]], texture2d<float> lattice [[texture(1)]]) {
+                              texture2d<float> logoMask [[texture(0)]], texture2d<float> noise [[texture(2)]]) {
     float2 position = input.position.xy;
     float2 uResolution = uniforms.resolution;
     float uScale = uniforms.scale;
@@ -100,6 +99,9 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
     float uPress = uniforms.press;
     float4 uLogoRect = uniforms.logoRect;
     float4 uLight = uniforms.light;
+    float uTraffic = uniforms.traffic;
+    float uDrift = uniforms.drift;
+    float uBreath = uniforms.breath;
   float2 rawPosition = (2.0 * float2(position.x, uResolution.y - position.y) - uResolution) / min(uResolution.x, uResolution.y);
   float opacity = 1.0 - smoothstep(0.88, 1.0, length(rawPosition));
   if (opacity <= 0.0) return half4(0.0);
@@ -120,24 +122,13 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
   // Light from straight ahead lights the ring evenly, so its highlights gather on one side only as it leans.
   float aim = smoothstep(0.0, 0.25, lightSpread);
 
-  // Connect impact: a pressure front leaves the locking logo, lenses the scene and then hits the ring.
-  float impacting = uImpact < 2.0 ? 1.0 : 0.0;
-  float impact = max(uImpact - 0.08, 0.0);
-  float shockRadius = 0.10 + 1.05 * (1.0 - exp(-impact * 2.4));
-  float shockWidth = 0.03 + 0.06 * impact;
-  float shockFade = exp(-impact * 2.2) * smoothstep(0.0, 0.03, uImpact) * impacting;
-  // The front is born at the logo and recentres on the ring by the time it reaches it.
-  float2 shockP = p - logoP * (1.0 - smoothstep(0.0, 0.3, impact));
-  float shockR = length(shockP);
-  float front = 0.0;
-  if (impacting > 0.0) {
-    float shockDistance = shockR - shockRadius;
-    float lens = shockDistance / shockWidth * exp(-shockDistance * shockDistance / (shockWidth * shockWidth));
-    p -= shockP / max(shockR, 0.0001) * lens * 0.022 * shockFade;
-    front = band(shockDistance, 0.005 + 0.012 * impact);
-  }
+  // Opening, counted in seconds from when the tunnel comes up: light gathers in the logo for a breath, a lens of light
+  // bursts from it past the ring, falls back into a membrane across the ring, ripples and clears to show the other side.
+  float opening = uImpact;
+  float impacting = opening < 2.5 ? 1.0 : 0.0;
   float r = length(p);
-  float hitAge = impact - 0.26;
+  // The lens's front strikes the ring as it passes, and the ring rings.
+  float hitAge = opening - 0.40;
   float hit = hitAge > 0.0 ? impacting : 0.0;
   float kick = hit * exp(-hitAge * 7.0) * sin(hitAge * 30.0);
   float surge = hit * exp(-hitAge * 3.5);
@@ -147,7 +138,19 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
   float squeeze = sin(PI * smoothstep(0.0, 0.7, closing)) * closeActive;
   // A press squeezes the ring and lights it, so the whole portal answers the finger.
   float energy = 0.19 + uPower * 0.71 + uBusy * 0.65 + surge * 0.9 + uPress * 0.35;
+  // The ring dims for the breath before the burst; connected, it breathes with the membrane.
+  float inhale = smoothstep(0.0, 0.08, opening) * (1.0 - smoothstep(0.12, 0.24, opening)) * impacting;
+  energy *= (1.0 - 0.14 * inhale) * (1.0 + 0.10 * (uBreath - 0.5) * uPower);
   float radius = 0.588 - 0.06 * squeeze + 0.022 * kick - 0.014 * uPress;
+  // The lens's front: out past the ring by 0.45 s, then back onto it with a bounce, where the membrane stays.
+  float front = 0.0;
+  if (opening >= 0.45) {
+    float settling = opening - 0.45;
+    front = radius - 0.03 + (0.70 - radius) * exp(-settling * 7.0) * cos(settling * 12.0);
+  } else if (opening >= 0.15) {
+    float rest = 1.0 - (opening - 0.15) / 0.30;
+    front = 0.67 * (1.0 - rest * rest * rest);
+  }
   // ChromVoid's dark palette on hue 232: its accent, a near-white of the same hue and its decorative cyan.
   float3 cyan = float3(0.518, 0.835, 1.0);
   float3 ice = float3(0.875, 0.965, 1.0);
@@ -161,12 +164,119 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
   float2 circle3 = float2(circle2.x * circle.x - circle2.y * circle.y, circle2.x * circle.y + circle2.y * circle.x);
   float ringDistance = r - radius;
   // The flow noise only shapes the ring and its near glow, so far from it it rests at its mean.
-  float flow = abs(ringDistance) < 0.2 ? fbm(lattice, circle * 3.4 + float2(t * 0.24, -t * 0.19)) : 0.5;
+  float flow = abs(ringDistance) < 0.2 ? fbm(noise, circle * 3.4 + float2(t * 0.24, -t * 0.19)) : 0.5;
   float warp = (flow - 0.5) * (0.008 + 0.045 * uBusy) * (1.0 - smoothstep(0.14, 0.2, abs(ringDistance)));
   float d = ringDistance - warp;
   float3 bg = mix(float3(0.047, 0.094, 0.122), float3(0.053, 0.175, 0.232), exp(-r * r * 1.7) * 0.72);
   float grain = (hash(position) - 0.5) * 0.007;
   float3 col = bg + grain;
+  // Connected, a membrane spans the ring. It shows the other side: dim hazy depth that tilt moves and traffic flows through.
+  float span = 0.0;
+  if (uPower > 0.001 && front > 0.0 && r < radius) {
+    float collapse = 1.0;
+    if (closeActive > 0.0) {
+      // Closing, it drains into the logo with the ring's light.
+      float drain = smoothstep(0.04, 0.62, closing);
+      collapse = 1.0 - smoothstep(radius * (1.0 - drain) - 0.06, radius * (1.0 - drain), length(p - logoP * drain));
+    }
+    span = min(uPower * 1.4, 1.0) * collapse * (1.0 - smoothstep(front - 0.025, front + 0.004, r))
+      * (1.0 - smoothstep(radius - 0.05, radius - 0.018, r));
+  }
+  if (span > 0.0) {
+    // The lens bulges towards the viewer, overshoots into a hollow as it falls back, and settles flat.
+    float bulgeAge = opening - 0.40;
+    float bulge = opening < 0.15 || opening > 2.0 ? 0.0
+      : bulgeAge < 0.0 ? smoothstep(0.15, 0.40, opening) : exp(-bulgeAge * 6.0) * cos(bulgeAge * 10.0);
+    float lensRadius = max(front, 0.2);
+    float2 slope = -circle * (bulge * 0.18 * r / (lensRadius * lensRadius));
+    // Two rings roll out from the logo, where the lens fell back.
+    float2 fromLogo = p - logoP;
+    float logoR = length(fromLogo);
+    if (opening > 0.72 && opening < 3.4) {
+      for (int i = 0; i < 2; i++) {
+        float age = opening - 0.72 - 0.2 * float(i);
+        float wave = logoR - age * 0.48;
+        slope += fromLogo / max(logoR, 0.0001) * (-2.0 * wave / 0.0025) * exp(-wave * wave / 0.0025) * 0.009 * exp(-age * 2.0)
+          * smoothstep(0.0, 0.25, age);
+      }
+    }
+    // Traffic drops ripples in where it crosses the rim; their crests catch a little light.
+    float crests = 0.0;
+    for (int i = 0; i < 3; i++) {
+      float4 ripple = uniforms.ripples[i];
+      if (ripple.w > 0.0) {
+        float2 fromDrop = p - ripple.xy * (radius - 0.05);
+        float dropR = length(fromDrop);
+        float wave = dropR - ripple.z * 0.42;
+        float fade = ripple.w * (1.0 - ripple.z / 1.6) * smoothstep(0.0, 0.15, ripple.z);
+        slope += fromDrop / max(dropR, 0.0001) * (-2.0 * wave / 0.002) * exp(-wave * wave / 0.002) * 0.008 * fade;
+        crests += exp(-wave * wave / 0.0005) * fade;
+      }
+    }
+    // The other side lies deep behind the ring, so tilt slides it further than the ring; ripples bend it, and the
+    // membrane's curve near the rim draws more of it into view.
+    float clearing = smoothstep(1.0, 2.0, opening);
+    float bend = smoothstep(0.2, radius, r);
+    float2 q = (p + uTilt * 0.10 + slope * 0.35) * (1.0 + 0.45 * bend * bend);
+    float rq = length(q);
+    float2 inward = q / max(rq, 0.0001);
+    // Depth along the passage, which drops away from the viewer as it clears and then stands still.
+    float depth = 0.22 / max(rq, 0.03);
+    float settled = depth - 0.9 * (1.0 - exp(-max(opening - 1.0, 0.0) * 2.2));
+    float fog = exp(-depth * 0.55);
+    float nearFade = smoothstep(0.03, 0.16, rq);
+    float ribOffset = fract(settled) - 0.5;
+    float rib = exp(-ribOffset * ribOffset * 100.0) * fog * nearFade;
+    // The haze is read along the passage, so it recedes with the depth and grows finer towards the far end.
+    float haze = fbm(noise, inward * (1.4 + settled * 0.9));
+    float3 beyond = mix(float3(0.016, 0.050, 0.072), float3(0.030, 0.130, 0.185), haze * fog) + deep * rib * 0.30;
+    if (uTraffic > 0.001) {
+      // Packets run along lanes of the passage, into it on seven and out of it on six; the lanes come from powers of
+      // the unit vector, so no atan.
+      float2 inward2 = float2(inward.x * inward.x - inward.y * inward.y, 2.0 * inward.x * inward.y);
+      float2 inward4 = float2(inward2.x * inward2.x - inward2.y * inward2.y, 2.0 * inward2.x * inward2.y);
+      float2 inward6 = float2(inward4.x * inward2.x - inward4.y * inward2.y, inward4.x * inward2.y + inward4.y * inward2.x);
+      float2 inward7 = float2(inward6.x * inward.x - inward6.y * inward.y, inward6.x * inward.y + inward6.y * inward.x);
+      float stagger = fbm(noise, inward * 1.4 + 5.0);
+      float leaving = fract((settled - uDrift) * 0.8 + stagger * 3.0) - 0.5;
+      float arriving = fract(-(settled + uDrift * 1.3333) * 0.6 + stagger * 4.0) - 0.5;
+      float lanes = pow(0.5 + 0.5 * inward7.x, 30.0) * exp(-leaving * leaving / 0.006)
+        + pow(0.5 + 0.5 * (inward6.x * 0.5 - inward6.y * 0.866), 30.0) * exp(-arriving * arriving / 0.006);
+      beyond += cyan * lanes * fog * nearFade * uTraffic * 0.9;
+    }
+    beyond *= clearing * (0.92 + 0.16 * uBreath);
+    // The membrane: lit from inside while the lens bursts, then a clear film that only catches light.
+    float3 halfway = normalize(normalize(float3(light.xy, max(light.z, 0.25))) + float3(0.0, 0.0, 1.0));
+    float veil = 1.0 - clearing;
+    float3 membrane = deep * (0.10 + 0.22 * smoothstep(radius * 0.5, radius - 0.03, r)) * (0.6 + 0.4 * veil)
+      + float3(0.02, 0.07, 0.10) * veil * veil;
+    // Still, the film catches the light the same everywhere; ripples and the lens bend it into highlights and shade.
+    float spec = pow(halfway.z, 80.0);
+    if (dot(slope, slope) > 0.0) {
+      spec = pow(max(dot(normalize(float3(-slope * 0.9, 1.0)), halfway), 0.0), 80.0);
+      float shade = dot(-slope, lightDir) * aim;
+      membrane += mix(deep * 0.5, cyan, step(0.0, shade)) * min(abs(shade) * 3.0, 1.0) * 0.10
+        + mix(cyan, ice, 0.3) * crests * 0.26 * (0.6 + 0.4 * aim);
+    }
+    membrane += ice * spec * (0.35 + 0.45 * lean);
+    if (bulge > 0.0) {
+      float reach = r * r / (lensRadius * lensRadius);
+      membrane += cyan * bulge * (0.16 + 0.55 * reach * reach) + ice * bulge * bulge * exp(-logoR * logoR / 0.025) * 0.45;
+    }
+    // Light that the membrane bends round the rim.
+    if (abs(r - radius + 0.052) < 0.02) membrane += ice * band(r - radius + 0.052, 0.0045) * 0.22 * clearing;
+    col = mix(col, beyond + membrane, span);
+  }
+  // The burst's front: a white edge trailing deep cyan, carried past the ring before it falls back onto it.
+  if (front > 0.0 && opening < 1.2 && uPower > 0.001) {
+    float frontFade = smoothstep(0.15, 0.2, opening) * exp(-max(opening - 0.42, 0.0) * 6.0);
+    float edge = r - front;
+    col += ice * band(edge, 0.005) * frontFade * 0.9 + deep * band(edge + 0.012, 0.009) * frontFade * 0.7;
+    col += cyan * band(edge, 0.035) * frontFade * 0.25;
+    // Light thrown out across the page as the front strikes the ring.
+    float thrown = opening - 0.40;
+    if (thrown > 0.0) col += cyan * band(r - radius - thrown * 0.75, 0.012 + thrown * 0.05) * exp(-thrown * 3.5) * 0.35;
+  }
   col += deep * exp(-abs(d) * 11.0) * energy * 0.13;
   col += cyan * exp(-abs(d) * 33.0) * energy * 0.13;
 
@@ -208,7 +318,7 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
     col = mix(col, metal * (0.66 + energy * 0.52), material);
     col += packets + cyan * material * rush * 0.3;
 
-    float edgeFlow = fbm(lattice, circle * 6.0 + float2(t * 0.38, t * 0.2));
+    float edgeFlow = fbm(noise, circle * 6.0 + float2(t * 0.38, t * 0.2));
     float filament = band(d + 0.026 + 0.006 * edgeFlow, 0.0025);
     float inner = band(d - 0.028 + 0.004 * flow, 0.002);
     col += cyan * filament * detailEnergy * (0.5 + reflection);
@@ -233,7 +343,7 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
       col += cyan * band(d, 0.044) * tail * busy * 0.30;
     }
     if (r > 0.57 && abs(d - 0.055) < 0.5) {
-      float haze = fbm(lattice, p * 4.8 + float2(t * 0.13, -t * 0.22));
+      float haze = fbm(noise, p * 4.8 + float2(t * 0.13, -t * 0.22));
       float curtainPhase = haze * 9.0 - t;
       float curtain = pow(max(0.0, 1.0 - abs(circle3.y * cos(curtainPhase) + circle3.x * sin(curtainPhase))), 5.0);
       float aura = exp(-abs(d - 0.055) * 13.0) * smoothstep(0.57, 0.69, r);
@@ -255,14 +365,6 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
     }
   }
 
-  if (impacting > 0.0) {
-    col += ice * front * shockFade * 1.1;
-    col += cyan * band(shockR - shockRadius, shockWidth * 1.6) * shockFade * 0.28;
-    float echo = max(impact - 0.14, 0.0);
-    float echoRadius = 0.10 + 1.05 * (1.0 - exp(-echo * 2.4));
-    float echoR = length(p - logoP * (1.0 - smoothstep(0.0, 0.3, echo)));
-    col += cyan * band(echoR - echoRadius, 0.006 + 0.012 * echo) * exp(-echo * 2.6) * step(0.0, impact - 0.14) * 0.45;
-  }
   // Closing: the ring's light drains inward across the portal and is swallowed by the logo.
   if (closeActive > 0.0) {
     float drain = smoothstep(0.04, 0.62, closing);
@@ -295,11 +397,11 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
       float crack = exp(-spun.x * spun.x / (seamWidth * seamWidth)) * (1.0 - smoothstep(0.35, 1.05, abs(spun.y)));
       if (open > 0.0) {
         float core = exp(-reach / (0.05 + 0.18 * open));
-        float flicker = 0.7 + 0.3 * fbm(lattice, spun * 3.0 + float2(t * 1.7, -t * 1.3));
+        float flicker = 0.7 + 0.3 * fbm(noise, spun * 3.0 + float2(t * 1.7, -t * 1.3));
         float leak = (crack * 0.55 + core * 0.65) * open * flicker * (0.5 + 0.5 * clamp(uBusy + uPower, 0.0, 1.0));
         col += mix(cyan, ice, core) * leak;
       }
-      float lockFlash = smoothstep(0.0, 0.08, uImpact) * exp(-impact * 5.0) * impacting;
+      float lockFlash = smoothstep(0.0, 0.12, opening) * exp(-max(opening - 0.14, 0.0) * 9.0) * impacting;
       float swallow = closeActive * exp(-(closing - 0.62) * (closing - 0.62) / 0.006);
       col += ice * exp(-reach / 0.9) * (lockFlash * 0.45 + swallow * 0.18);
 
@@ -319,6 +421,13 @@ fragment half4 portalFragment(PortalVertex input [[stage_in]], constant PortalUn
         col = mix(col, logo, mask);
       }
     }
+  }
+  // Light past 0.85 rolls off towards white instead of clipping (the shoulder of Khronos PBR Neutral, without its toe).
+  float peak = max(col.r, max(col.g, col.b));
+  if (peak > 0.85) {
+    float rolled = 1.0 - 0.0225 / (peak - 0.70);
+    col *= rolled / peak;
+    col = mix(col, float3(rolled), 1.0 - 1.0 / (0.15 * (peak - rolled) + 1.0));
   }
   return half4(half3(clamp(col, 0.0, 1.0) * opacity), half(opacity));
 }

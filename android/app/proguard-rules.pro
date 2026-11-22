@@ -1,4 +1,0 @@
--keep class go.** { *; }
--keep class com.chromvoid.core.mobile.** { *; }
--keep class * implements go.Seq$Proxy { *; }
--keep class app.wayveil.HevTunnel { *; }

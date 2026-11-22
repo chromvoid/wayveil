@@ -10,6 +10,7 @@ final class TunnelPlatform: NSObject, MobilePlatformProtocol {
     private let pathLock = NSLock()
     private let monitor = NWPathMonitor()
     private var interfaceIndex: UInt32 = 0
+    private var networkType = "other"
     private var lastPath = ""
     private var closed = false
     private var bridge: PacketFlowBridge?
@@ -27,6 +28,12 @@ final class TunnelPlatform: NSObject, MobilePlatformProtocol {
             let signature = "\(available)/\(interface?.index ?? 0)/\(path.isExpensive)/\(path.isConstrained)"
             self.pathLock.lock()
             self.interfaceIndex = available ? UInt32(interface!.index) : 0
+            switch interface?.type {
+            case .wifi: self.networkType = "wifi"
+            case .cellular: self.networkType = "cellular"
+            case .wiredEthernet: self.networkType = "wired"
+            default: self.networkType = "other"
+            }
             let changed = !self.lastPath.isEmpty && self.lastPath != signature && !self.closed
             self.lastPath = signature
             self.pathLock.unlock()
@@ -38,6 +45,26 @@ final class TunnelPlatform: NSObject, MobilePlatformProtocol {
             throw failure("The network path is unavailable.")
         }
     }
+
+    func networkKey() -> String {
+        pathLock.lock(); defer { pathLock.unlock() }
+        return networkType
+    }
+
+    var networkSignature: String {
+        pathLock.lock(); defer { pathLock.unlock() }
+        return lastPath
+    }
+
+    /// The physical network the path monitor last reported is up.
+    var networkAvailable: Bool {
+        pathLock.lock(); defer { pathLock.unlock() }
+        return !closed && interfaceIndex > 0
+    }
+
+    var forwardingGeneration: UUID? { bridge?.generation }
+
+    func physicalDNSServers() -> String { "" }
 
     func protectSocket(_ fd: Int64) throws {
         pathLock.lock()
@@ -118,6 +145,7 @@ final class TunnelPlatform: NSObject, MobilePlatformProtocol {
 }
 
 private final class PacketFlowBridge {
+    let generation = UUID()
     private weak var provider: PacketTunnelProvider?
     private let queue = DispatchQueue(label: "com.chromvoid.vpn.packets")
     private let worker = DispatchQueue(label: "com.chromvoid.vpn.hev")
@@ -160,7 +188,7 @@ private final class PacketFlowBridge {
             }
             workerLock.lock(); workerFinished = true; workerLock.unlock()
             completion.leave()
-            provider?.forwardingStopped(result: result)
+            provider?.forwardingStopped(result: result, generation: generation)
         }
     }
 

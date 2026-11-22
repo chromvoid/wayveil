@@ -1,60 +1,51 @@
-# Wayveil for iOS and Android
+# Wayveil for iOS
 
-Native SwiftUI and Jetpack Compose Hysteria2 VPN clients with the same connection-profile format and routing modes. The networking stack is the ChromVoid Hysteria mobile fork plus HEV SOCKS5 tunnel. Import your own compatible connection profile. No server credentials, VPN subscription, or user profiles are included.
-
-This repository contains both clients, their networking sources, the native integration, and build inputs. The separately operated service backend is outside this source release. Private development history, operator tools, signing keys, provisioning profiles, and account credentials are excluded.
+Source for Wayveil TestFlight 0.1.1 (9), tag `ios-v0.1.1-build.9`. The SwiftUI client imports connection profiles and invitations. Its packet tunnel uses the ChromVoid Hysteria mobile core and HEV SOCKS5 tunnel. The app and tunnel require iOS 16 or later. The Control Center extension requires iOS 18 or later.
 
 ## Source version
 
-- iOS: 0.1.0, build 8; bundle identifier `com.chromvoid.vpn`.
-- Android: 0.1.1, version code 6; application ID `com.chromvoid.wayveil`. This snapshot contains the current MIT client source; no Android binary is tied to this tag. Historical binaries remain associated with their own source tags; this source release does not replace those artifacts.
-- Source tag: `ios-v0.1.0-build.8`; this snapshot contains both current clients under the Wayveil name, first-party MIT licensing, the shared client routing rules under `routing/` and the current portal design.
-- Hysteria: [ChromVoid mobile fork](https://github.com/chromvoid/hysteria/tree/91d0786404bbaefc491353da2cdf7708f3c37228), branch `wayveil-mobile`, commit `91d0786404bbaefc491353da2cdf7708f3c37228`, based on upstream `ca8fbd874fd6ca82413948de6dc5924405e103e1`. The complete fork is included under `third_party/hysteria`. Physical destination addresses on iOS resolve through native `getaddrinfo` with `AF_UNSPEC` and `AI_DEFAULT`, allowing iOS NAT64 synthesis. The mobile core applies the client routing rules from `routing/default-rules.json`; its decision fixture matches `routing/testdata/decisions.json`.
-- HEV: commit `55cc2efc280f3a72ffc60ce856772b57f5122e9c`, with four pinned submodules expanded under `third_party/hev`. The ChromVoid lifecycle patch `native/hev/hev-reset-stop.patch` is already applied. The Android integration uses only the JNI adapter in `native/hev`, excluding HEV's original application adapter. Exact pins and hashes are recorded in `SOURCE.json`.
-- Go dependencies and gomobile v0.1.12 tool/runtime sources are included under `third_party/hysteria/app/vendor`, with original licenses and `vendor/modules.txt`. The app module keeps local replacements for the modified core and extras modules; its vendored copies preserve those changes.
-- The unused Windows `third-part/wintun` subtree and its precompiled DLLs are excluded. Upstream Git ignore files are omitted so vendored source remains visible in this source mirror.
-- This is a source release, not an announcement of App Store or Google Play availability. Historical snapshots remain under their own source tags. It does not update the App Store draft or submit a build for review.
+- The app bundle identifier is `com.chromvoid.vpn`. The Xcode project contains the app, PacketTunnel, WayveilControls and the existing iOS unit tests. The routing document and test fixtures live under `routing/`.
+- `third_party/hysteria` contains the mobile package, its tests and the build inputs for the local core and extras modules. The runtime sources come from the [public Hysteria fork at 0f312949](https://github.com/chromvoid/hysteria/tree/0f3129498a2022aca3cd82e513c80595b0313d99).
+- The mobile module replaces `github.com/xtls/xray-core v1.260327.0` with the [ChromVoid Xray-core fork at c8acf0a4](https://github.com/chromvoid/Xray-core/tree/c8acf0a4a9ab4a26f6108a1ade355d8ffda513de). Go dependencies and gomobile/gobind v0.1.12 are included in `third_party/hysteria/app/vendor`. The module files, checksums, replacement directives and `vendor/modules.txt` record the dependency versions.
+- `third_party/hev` contains [HEV at 55cc2efc](https://github.com/heiher/hev-socks5-tunnel/tree/55cc2efc280f3a72ffc60ce856772b57f5122e9c) with its four submodules expanded. The lifecycle patch in `native/hev` is already applied. Submodule revisions and the patch digest are in `SOURCE.json`.
+
+The public project selects the iOS targets and icon assets from the shared Apple project. The mobile core tests use example endpoints and check the vendored dependency graph. Upstream Go ignore files are omitted so all vendor sources are tracked. The bundled notices identify the Xray revision used by this build.
 
 ## Build
 
-The tested toolchain is macOS, Xcode 27.0, XcodeGen 2.46.0, Go 1.27.3, JDK 21, Android SDK 36 and Android NDK 29.0.13846066. Gradle 9.4.1 is pinned by the included wrapper and distribution checksum. Deployment targets are iOS 16 and Android 10 (API 29); Android native ABIs are arm64-v8a and x86_64. Put Go and XcodeGen on PATH and select Xcode with `xcode-select`.
+Use macOS with Xcode 27.2 and its Metal toolchain, XcodeGen 2.46.0 and Go 1.27.3. Select Xcode with `xcode-select` or `DEVELOPER_DIR` and put Go and XcodeGen on `PATH`. From the root of the checkout or unpacked source archive, run
 
 ```sh
+shasum --quiet -a 256 -c SOURCE-SHA256SUMS
 scripts/build-mobile-core.sh
 xcodegen generate --spec ios/project.yml --project ios
 xcodebuild -project ios/Wayveil.xcodeproj -scheme Wayveil \
-  -destination 'generic/platform=iOS Simulator' \
+  -configuration Release -destination 'generic/platform=iOS' \
   -derivedDataPath .local/DerivedData CODE_SIGNING_ALLOWED=NO build
-cd android
-./gradlew :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest
 ```
 
-The shared script builds both Apple and Android networking artifacts from the included sources. It uses `GOWORK=off` and `GOFLAGS=-mod=vendor`, and builds gomobile/gobind from the vendored v0.1.12 tool source. No precompiled framework, AAR, native library, or original publisher signing key is required. The Android SDK/NDK must be installed (`ANDROID_HOME` and `ANDROID_NDK_HOME` can override their default locations). Gradle downloads its pinned distribution and Maven dependencies on the first build. The unsigned Android release output is not ready for store upload until signed with your own key.
+The script builds HEV and WayveilCore XCFrameworks for arm64 devices and arm64/x86_64 simulators from the included sources. It builds the binding tools from the vendor directory. The release command produces an unsigned app with both extensions in `.local/DerivedData/Build/Products/Release-iphoneos/`.
 
-For physical iOS devices, select your own paid Apple Developer team for both targets. Use bundle identifiers registered to that team if the existing identifiers are unavailable. Both targets need the packet-tunnel Network Extension capability and the same team-prefixed Keychain access group. Simulator builds intentionally refuse to create a VPN tunnel.
-
-To run the existing iOS tests, replace `SIMULATOR_UDID` with an available simulator:
+To run the existing tests, use `xcrun simctl list devices available` and set `SIMULATOR_UDID` to an available iOS simulator. Xcode's local ad hoc signature enables the shared Keychain group used by the storage tests. The routing tests read fixture files from the checkout.
 
 ```sh
 xcodebuild -project ios/Wayveil.xcodeproj -scheme Wayveil \
-  -destination 'platform=iOS Simulator,id=SIMULATOR_UDID' \
-  -derivedDataPath .local/DerivedData CODE_SIGNING_ALLOWED=NO test
+  -destination "platform=iOS Simulator,id=${SIMULATOR_UDID}" \
+  -parallel-testing-enabled NO -derivedDataPath .local/DerivedData \
+  CODE_SIGN_IDENTITY=- CODE_SIGN_STYLE=Manual DEVELOPMENT_TEAM= test
+(cd third_party/hysteria/app && GOWORK=off GOFLAGS=-mod=vendor GOPROXY=off go test ./mobile)
 ```
 
-The Go mobile tests can run independently with `cd third_party/hysteria/app && GOWORK=off GOFLAGS=-mod=vendor go test ./mobile`. `SOURCE-SHA256SUMS` covers all published files except that manifest itself; build outputs are ignored.
+`SOURCE-SHA256SUMS` covers every published file except itself. It verifies the source archive. TestFlight package verification is a separate publisher step.
 
 ## License and attribution
 
-Copyright (c) 2026 ChromVoid LLC for the first-party clients, licensed under MIT; see `LICENSE`. Preserve the copyright and permission notice when redistributing substantial portions. The owner authorized this first-party MIT grant for the current release. Historical GPL source tags and binaries remain unchanged.
+Copyright (c) 2026 ChromVoid LLC. First-party Wayveil source and its native integration are licensed under MIT. Preserve the copyright and permission notice in `LICENSE` when redistributing substantial portions.
 
-The networking runtime uses MIT, BSD, and Apache-2.0 components. Its Hysteria fork is pinned to `91d0786404bbaefc491353da2cdf7708f3c37228`, including native iOS address resolution and HEV integration. Matching package hashes and bounded build verification are recorded in `SOURCE.json`. The signed iOS build 8 carries clean Hysteria revision `91d0786404bbaefc491353da2cdf7708f3c37228` and passed 25 existing iOS unit tests on a simulator. New physical-device tests, Android binaries and store approvals are not claimed for this tag. This statement concerns the selected mobile networking runtime, not every optional server, test, or build-tool package in the complete source inventory. Hysteria and HEV retain their MIT licenses; HEV's lwIP submodule retains its BSD license. Go and gomobile retain their BSD notices. Native integration code is MIT. AndroidX graphics-path is Apache-2.0.
-
-Preserve the full notices in `ios/App/Resources/ThirdPartyNotices.txt`, `android/app/src/main/assets/LICENSES.txt`, all licenses under `third_party`, and `native/hev/LICENSE`. The native notices include original libyaml attribution in addition to its fork attribution. Apple/Android SDKs, Xcode, system libraries, the Go compiler, and other generally available build tools are not redistributed here; the Gradle wrapper JAR is included as a build tool.
-
-The first-party MIT grant does not relicense third-party code, change platform agreements or announce store approval. Signed-package upload, App Review submission and public release are separate publisher actions.
+Preserve the component licenses under `third_party`, `native/hev/LICENSE` and the bundled `ios/App/Resources/ThirdPartyNotices.txt`. The notices include the MPL-2.0 terms for Xray-core and REALITY, the LGPL-3.0 terms and linking exception for juju/ratelimit, and the original libyaml attribution. The Go compiler and Apple development tools are supplied separately.
 
 ## Links
 
-- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.0-build.8)
+- [Versioned source](https://github.com/chromvoid/wayveil/releases/tag/ios-v0.1.1-build.9)
 - [Privacy](https://link.chromvoid.com/privacy)
 - [Support](https://link.chromvoid.com/support)

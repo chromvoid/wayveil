@@ -1,11 +1,6 @@
 import Foundation
 import Security
 
-enum RoutingMode: String, CaseIterable {
-    case all = "ALL"
-    case russianDirect = "RUSSIAN_DIRECT"
-}
-
 enum ProfileError: Error, LocalizedError {
     case invalid, tooLarge, unsupported, tlsRequired, certificate, unsupportedOptions
     var errorDescription: String? {
@@ -36,6 +31,20 @@ struct ConnectionProfile: Codable, Equatable {
         case port = "server_port"
         case obfsPassword = "obfs_password"
         case serverName = "server_name"
+    }
+
+    func exportLink() -> String {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.withoutEscapingSlashes]
+        func quoted(_ value: String) -> String {
+            String(decoding: try! encoder.encode(value), as: UTF8.self)
+        }
+        let json = "{\"version\":\(version),\"name\":\(quoted(name)),\"server\":\(quoted(server)),\"server_port\":\(port),\"password\":\(quoted(password)),\"obfs_password\":\(quoted(obfsPassword)),\"server_name\":\(quoted(serverName)),\"certificate\":\(quoted(certificate))}"
+        let data = Data(json.utf8).base64EncodedString()
+            .replacingOccurrences(of: "+", with: "-")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "=", with: "")
+        return "wayveil://profile?data=" + data
     }
 
     static func parse(_ text: String) throws -> ConnectionProfile {

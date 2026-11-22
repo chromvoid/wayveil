@@ -142,10 +142,10 @@ struct RoutingRules: Encodable, Equatable {
         case directDomain = "direct_domain"
     }
 
-    init(routing: RoutingMode, base: RoutingDocument, overrides: RoutingOverrides) {
+    init(base: RoutingDocument, overrides: RoutingOverrides) {
         proxySuffix = Array(Set(overrides.proxy)).sorted()
-        directSuffix = Array(Set(overrides.direct + (routing == .russianDirect ? base.categories.flatMap(\.domainSuffix) : []))).sorted()
-        directDomain = Array(Set(routing == .russianDirect ? base.categories.flatMap(\.domain) : [])).sorted()
+        directSuffix = Array(Set(overrides.direct + base.categories.flatMap(\.domainSuffix))).sorted()
+        directDomain = Array(Set(base.categories.flatMap(\.domain))).sorted()
     }
 
     static func normalizeInput(_ input: String) throws -> String {

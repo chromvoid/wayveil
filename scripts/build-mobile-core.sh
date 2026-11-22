@@ -6,16 +6,13 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HYSTERIA="$ROOT/third_party/hysteria"
-HYSTERIA_REVISION=91d0786404bbaefc491353da2cdf7708f3c37228
 HEV="$ROOT/third_party/hev"
 HEV_REVISION=55cc2efc280f3a72ffc60ce856772b57f5122e9c
 BUILD="$ROOT/.local/native/hev"
-export PATH="$ROOT/.local/tools/go/bin:$ROOT/.local/tools/bin:$PATH"
 export GOBIN="$ROOT/.local/tools/bin"
-export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
-export ANDROID_NDK_HOME="${ANDROID_NDK_HOME:-$ANDROID_HOME/ndk/29.0.13846066}"
+export PATH="$GOBIN:$PATH"
 
-mkdir -p "$GOBIN" "$BUILD" "$ROOT/ios/Frameworks" "$ROOT/android/app/libs"
+mkdir -p "$GOBIN" "$BUILD" "$ROOT/ios/Frameworks"
 # Dependency sources and expanded HEV submodules are included in this release.
 # The HEV lifecycle patch is already applied; fail if those inputs change.
 test "$(shasum -a 256 "$HEV/src/hev-socks5-tunnel.c" | cut -d " " -f 1)" = 5823e607770e06ec04685c29d1f0123b12cea65059c225c83eba4dcc76d4afec
@@ -26,7 +23,7 @@ cmp "$HYSTERIA/app/mobile/testdata/routing-decisions.json" "$ROOT/routing/testda
 build_apple() {
     local sdk="$1" arch="$2" output="$BUILD/apple/$1-$2"
     mkdir -p "$output"
-    make -C "$HEV" clean
+    make -C "$HEV" REV_ID="${HEV_REVISION:0:7}" clean
     make -C "$HEV" \
         PP="xcrun --sdk $sdk clang" CC="xcrun --sdk $sdk clang" \
         CFLAGS="-arch $arch -m$sdk-version-min=16.0" \
@@ -52,37 +49,13 @@ xcodebuild -create-xcframework \
     -library "$BUILD/apple/iphonesimulator-universal/libhev-socks5-tunnel.a" -headers "$BUILD/apple/include" \
     -output "$ROOT/ios/Frameworks/HevSocks5Tunnel.xcframework"
 
-for abi in arm64-v8a x86_64; do
-    rm -f "$BUILD/android/obj/local/$abi/libwayveilhev.so"
-done
-"$ANDROID_NDK_HOME/ndk-build" \
-    NDK_PROJECT_PATH=null \
-    APP_BUILD_SCRIPT="$ROOT/native/hev/Android.mk" \
-    NDK_APPLICATION_MK="$ROOT/native/hev/Application.mk" \
-    NDK_OUT="$BUILD/android/obj" \
-    NDK_LIBS_OUT="$ROOT/android/app/src/main/jniLibs" \
-    HEV_SOURCE_DIR="$HEV" \
-    REV_ID="${HEV_REVISION:0:7}" APP_MODULES=wayveilhev
-
-LLVM="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/darwin-x86_64/bin"
-for abi in arm64-v8a x86_64; do
-    library="$ROOT/android/app/src/main/jniLibs/$abi/libwayveilhev.so"
-    symbols="$("$LLVM/llvm-nm" -D "$library")"
-    strings="$("$LLVM/llvm-strings" "$library")"
-    if [[ "$symbols" == *JNI_OnLoad* || "$strings" == *hev/htproxy* || "$strings" == *TProxyService* ]]; then
-        echo "The native library includes the upstream application JNI adapter." >&2
-        exit 1
-    fi
-done
-
 cd "$HYSTERIA/app"
 export GOWORK=off
 export GOFLAGS=-mod=vendor
+export GOPROXY=off
+export GOTOOLCHAIN=local
 # Build the pinned generator and runtime from the included vendor source.
 go install github.com/sagernet/gomobile/cmd/gomobile
 go install github.com/sagernet/gomobile/cmd/gobind
-gomobile bind -target=android/arm64,android/amd64 -androidapi=29 \
-    -javapkg=com.chromvoid.core -libname=wayveilcore -trimpath \
-    -ldflags='-s -w' -o "$ROOT/android/app/libs/wayveilcore.aar" ./mobile
-gomobile bind -target=ios,iossimulator -iosversion=16.0 -trimpath \
+gomobile bind -target=ios,iossimulator -iosversion=16.0 -trimpath -buildvcs=false \
     -ldflags='-s -w' -o "$ROOT/ios/Frameworks/WayveilCore.xcframework" ./mobile

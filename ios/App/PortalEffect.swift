@@ -1,56 +1,75 @@
 import MetalKit
-import CoreMotion
 import SwiftUI
+#if os(iOS)
+import CoreMotion
+#else
+import AppKit
+#endif
 
-struct PortalEffect: UIViewRepresentable {
+struct PortalEffect {
     let phase: TunnelPhase
     let buttonDiameter: CGFloat
     let logoBounds: CGRect
     let active: Bool
     let pressed: Bool
+    /// The tunnel's live traffic in bytes per second, nil when it is not connected or not known yet.
+    let traffic: Double?
     @Environment(\.displayScale) private var displayScale
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     func makeCoordinator() -> Renderer? { Renderer() }
 
-    func makeUIView(context: Context) -> MTKView {
-        let view = MTKView(frame: .zero, device: context.coordinator?.device)
+    private func makeView(renderer: Renderer?) -> MTKView {
+        #if os(iOS)
+        let view = MTKView(frame: .zero, device: renderer?.device)
         view.isOpaque = false
         view.backgroundColor = .clear
+        view.contentScaleFactor = displayScale
+        view.isUserInteractionEnabled = false
+        #else
+        let view = PortalMetalView(frame: .zero, device: renderer?.device)
+        view.layer?.isOpaque = false
+        #endif
         view.clearColor = MTLClearColor(red: 0, green: 0, blue: 0, alpha: 0)
         view.colorPixelFormat = .bgra8Unorm
         view.isPaused = true
         view.preferredFramesPerSecond = 60
-        view.contentScaleFactor = displayScale
-        view.isUserInteractionEnabled = false
-        view.delegate = context.coordinator
+        view.delegate = renderer
         return view
     }
 
-    func updateUIView(_ view: MTKView, context: Context) {
-        guard let renderer = context.coordinator else { return }
+    private func update(_ view: MTKView, renderer: Renderer?) {
+        guard let renderer else { return }
         renderer.active = active
         renderer.setMotionEnabled(active && !reduceMotion, view: view)
         renderer.buttonDiameter = buttonDiameter
         renderer.logoBounds = logoBounds
         renderer.reduceMotion = reduceMotion
         renderer.pressed = pressed
+        renderer.traffic = traffic
         renderer.observe(phase: phase)
+        #if os(iOS)
         view.contentScaleFactor = displayScale
+        #endif
         // The view's own display link drives the animation, so SwiftUI is not re-evaluated every frame.
         // Reduced motion draws one still frame on demand instead.
         view.enableSetNeedsDisplay = reduceMotion
         view.isPaused = !active || reduceMotion
+        #if os(iOS)
         if active && reduceMotion { view.setNeedsDisplay() }
+        #else
+        if active && reduceMotion { view.needsDisplay = true }
+        #endif
     }
 
-    static func dismantleUIView(_ view: MTKView, coordinator: Renderer?) {
-        coordinator?.setMotionEnabled(false, view: view)
+    private static func dismantle(_ view: MTKView, renderer: Renderer?) {
+        renderer?.setMotionEnabled(false, view: view)
         view.delegate = nil
         view.releaseDrawables()
     }
 
-    /// Matches PortalUniforms in PortalShader.metal: 192 bytes, tilt at 32, logoRect at 48, press at 68, packets at 80, light at 176.
+    /// Matches PortalUniforms in PortalShader.metal: 256 bytes, tilt at 32, logoRect at 48, press at 68, packets at 80, light at 176,
+    /// traffic at 192, ripples at 208.
     struct Uniforms {
         var resolution = SIMD2<Float>(repeating: 0)
         var scale: Float = 1
@@ -67,6 +86,10 @@ struct PortalEffect: UIViewRepresentable {
         var press: Float = 0
         var packets = PortalTraffic.packets(at: 0)
         var light = PortalLight.light(at: 0, tilt: .zero)
+        var traffic: Float = 0
+        var drift: Float = 0
+        var breath: Float = 0.5
+        var ripples = (SIMD4<Float>.zero, SIMD4<Float>.zero, SIMD4<Float>.zero)
     }
 
     final class Renderer: NSObject, MTKViewDelegate {
@@ -74,11 +97,18 @@ struct PortalEffect: UIViewRepresentable {
         private let queue: MTLCommandQueue
         private let pipeline: MTLRenderPipelineState
         private let logoMask: MTLTexture
-        private let lattice: MTLTexture
+        private let noise: MTLTexture
+        #if os(iOS)
         private let motion = CMMotionManager()
         private var tracker = TiltTracker()
+        private var tiltSpring = TiltSpring()
         private var lastMotion: TimeInterval?
+        #else
+        private var pointer = PointerTilt()
+        private var pointerEnabled = false
+        #endif
         private var portal = PortalMotion()
+        private var flow = PortalFlow()
         private var phase: TunnelPhase = .disconnected
         private var power: Float?
         private var busy: Float = 0
@@ -91,20 +121,11 @@ struct PortalEffect: UIViewRepresentable {
         var logoBounds = CGRect.zero
         var active = false
         var pressed = false
+        var traffic: Double?
 
         init?(device: MTLDevice? = MTLCreateSystemDefaultDevice()) {
             guard let device, let queue = device.makeCommandQueue() else { return nil }
-            guard let logo = UIImage(named: "Portal") else {
-                assertionFailure("The portal logo asset is missing.")
-                return nil
-            }
-            let format = UIGraphicsImageRendererFormat()
-            format.scale = 1
-            format.opaque = false
-            let image = UIGraphicsImageRenderer(size: CGSize(width: 256, height: 256), format: format).image { _ in
-                logo.draw(in: CGRect(x: 0, y: 0, width: 256, height: 256))
-            }
-            guard let cgImage = image.cgImage else {
+            guard let cgImage = Self.logoImage() else {
                 assertionFailure("Could not rasterize the portal logo.")
                 return nil
             }
@@ -116,20 +137,15 @@ struct PortalEffect: UIViewRepresentable {
                 assertionFailure("Could not create the portal logo texture: \(error)")
                 return nil
             }
-            // The value-noise lattice for PortalShader.metal: one hash per texel with a period of 256 in both axes.
-            // The integer hash keeps shared cell corners identical on every GPU and matches portal.agsl on Android.
-            let latticeDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .r8Unorm, width: 256, height: 256, mipmapped: false)
-            latticeDescriptor.usage = .shaderRead
-            guard let lattice = device.makeTexture(descriptor: latticeDescriptor) else { return nil }
-            let hashes = (0..<256 * 256).map { index -> UInt8 in
-                let x = index % 256
-                let n = (x * 34 + 1) * x % 256 + index / 256
-                return UInt8((n * 34 + 1) * n % 256)
+            // The fractal noise for PortalShader.metal, baked once; the same bytes as portal.agsl reads on Android.
+            let size = PortalNoise.size
+            let noiseDescriptor = MTLTextureDescriptor.texture2DDescriptor(pixelFormat: .r8Unorm, width: size, height: size, mipmapped: false)
+            noiseDescriptor.usage = .shaderRead
+            guard let noise = device.makeTexture(descriptor: noiseDescriptor) else { return nil }
+            PortalNoise.bake().withUnsafeBytes {
+                noise.replace(region: MTLRegionMake2D(0, 0, size, size), mipmapLevel: 0, withBytes: $0.baseAddress!, bytesPerRow: size)
             }
-            hashes.withUnsafeBytes {
-                lattice.replace(region: MTLRegionMake2D(0, 0, 256, 256), mipmapLevel: 0, withBytes: $0.baseAddress!, bytesPerRow: 256)
-            }
-            self.lattice = lattice
+            self.noise = noise
             guard let library = device.makeDefaultLibrary(), let vertex = library.makeFunction(name: "portalVertex"),
                   let fragment = library.makeFunction(name: "portalFragment") else {
                 assertionFailure("The portal Metal library is missing.")
@@ -149,6 +165,28 @@ struct PortalEffect: UIViewRepresentable {
             super.init()
         }
 
+        /// The logo rasterized at 256 × 256, upright, as the mask texture expects it.
+        private static func logoImage() -> CGImage? {
+            let rect = CGRect(x: 0, y: 0, width: 256, height: 256)
+            #if os(iOS)
+            guard let logo = UIImage(named: "Portal") else { return nil }
+            let format = UIGraphicsImageRendererFormat()
+            format.scale = 1
+            format.opaque = false
+            return UIGraphicsImageRenderer(size: rect.size, format: format).image { _ in logo.draw(in: rect) }.cgImage
+            #else
+            guard let logo = NSImage(named: "Portal"),
+                  let context = CGContext(data: nil, width: 256, height: 256, bitsPerComponent: 8, bytesPerRow: 0,
+                                          space: CGColorSpaceCreateDeviceRGB(),
+                                          bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return nil }
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
+            logo.draw(in: rect)
+            NSGraphicsContext.restoreGraphicsState()
+            return context.makeImage()
+            #endif
+        }
+
         func observe(phase: TunnelPhase) {
             self.phase = phase
             if power == nil {
@@ -159,15 +197,21 @@ struct PortalEffect: UIViewRepresentable {
                 uniforms.busy = busy
             }
             let lit = phase == .connected || phase == .connecting || phase == .reconnecting
-            if portal.observe(lit: lit, connected: phase == .connected, power: uniforms.power, busy: uniforms.busy, now: CACurrentMediaTime()) {
-                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
-            }
+            let connected = portal.observe(lit: lit, connected: phase == .connected, power: uniforms.power, busy: uniforms.busy,
+                                           now: CACurrentMediaTime())
+            #if os(iOS)
+            if connected { UIImpactFeedbackGenerator(style: .rigid).impactOccurred() }
+            #else
+            _ = connected
+            #endif
         }
 
+        #if os(iOS)
         func setMotionEnabled(_ enabled: Bool, view: MTKView) {
             if !enabled {
                 motion.stopDeviceMotionUpdates()
                 tracker = TiltTracker()
+                tiltSpring = TiltSpring()
                 lastMotion = nil
                 uniforms.tilt = .zero
                 return
@@ -189,14 +233,31 @@ struct PortalEffect: UIViewRepresentable {
                 self.tracker.update(rateX: Float(data.rotationRate.x), rateY: Float(data.rotationRate.y), dt: dt, quarterTurns: quarterTurns)
             }
         }
+        #else
+        /// A Mac has no gyroscope, so the pointer over the window leans the ring instead.
+        func setMotionEnabled(_ enabled: Bool, view: MTKView) {
+            pointerEnabled = enabled
+            if !enabled {
+                pointer = PointerTilt()
+                uniforms.tilt = .zero
+            }
+        }
+        #endif
 
         func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) { }
 
         func draw(in view: MTKView) {
+            #if os(iOS)
             guard active, UIApplication.shared.applicationState == .active,
                   view.bounds.width > 0, view.bounds.height > 0 else { return }
             // Scrolled out of view: tick slowly without drawing until the button is back.
-            guard let window = view.window, window.bounds.intersects(view.convert(view.bounds, to: window)) else {
+            let visible = view.window.map { $0.bounds.intersects(view.convert(view.bounds, to: $0)) } ?? false
+            #else
+            guard active, view.bounds.width > 0, view.bounds.height > 0 else { return }
+            // Scrolled out of view, or the window hidden behind others or minimized: tick slowly without drawing.
+            let visible = view.window.map { $0.occlusionState.contains(.visible) && !view.visibleRect.isEmpty } ?? false
+            #endif
+            guard visible else {
                 if view.preferredFramesPerSecond != 4 { view.preferredFramesPerSecond = 4 }
                 lastFrame = nil
                 return
@@ -208,9 +269,15 @@ struct PortalEffect: UIViewRepresentable {
             let targetPower: Float = phase == .connected ? 1 : 0
             let targetBusy: Float = connecting ? 1 : 0
             var power = self.power ?? targetPower
-            let tilt = tracker.tilt
+            #if os(iOS)
+            tiltSpring.step(toward: tracker.tilt, dt: dt)
+            let tilt = tiltSpring.tilt
+            #else
+            let tilt = pointerEnabled ? pointer.update(view: view, dt: dt) : .zero
+            #endif
             if reduceMotion {
                 portal.settle()
+                flow.settle()
                 power = targetPower
                 busy = targetBusy
                 time = 0
@@ -233,6 +300,7 @@ struct PortalEffect: UIViewRepresentable {
                 (uniforms.power, uniforms.busy) = portal.held(power: power, busy: busy, close: uniforms.close)
                 portal.step(dt: dt, connecting: connecting, close: uniforms.close,
                             speed: phase == .reconnecting ? 0.75 : 1)
+                flow.step(dt: dt, connected: phase == .connected, bytesPerSecond: traffic)
             }
             self.power = power
             if view.preferredFramesPerSecond != 60 { view.preferredFramesPerSecond = 60 }
@@ -244,6 +312,10 @@ struct PortalEffect: UIViewRepresentable {
             uniforms.press = press
             uniforms.packets = PortalTraffic.packets(at: time)
             uniforms.light = PortalLight.light(at: time, tilt: uniforms.tilt)
+            uniforms.traffic = flow.traffic
+            uniforms.drift = flow.drift
+            uniforms.breath = flow.breath
+            uniforms.ripples = (flow.ripples[0], flow.ripples[1], flow.ripples[2])
             uniforms.resolution = SIMD2(Float(view.drawableSize.width), Float(view.drawableSize.height))
             uniforms.scale = Float(min(view.bounds.width, view.bounds.height) * 0.43 / buttonDiameter)
             let scaleX = Float(view.drawableSize.width / view.bounds.width)
@@ -255,7 +327,7 @@ struct PortalEffect: UIViewRepresentable {
             encoder.setRenderPipelineState(pipeline)
             encoder.setFragmentBytes(&uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
             encoder.setFragmentTexture(logoMask, index: 0)
-            encoder.setFragmentTexture(lattice, index: 1)
+            encoder.setFragmentTexture(noise, index: 2)
             encoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: 3)
             encoder.endEncoding()
             command.present(drawable)
@@ -263,3 +335,46 @@ struct PortalEffect: UIViewRepresentable {
         }
     }
 }
+
+#if os(iOS)
+extension PortalEffect: UIViewRepresentable {
+    func makeUIView(context: Context) -> MTKView { makeView(renderer: context.coordinator) }
+    func updateUIView(_ view: MTKView, context: Context) { update(view, renderer: context.coordinator) }
+    static func dismantleUIView(_ view: MTKView, coordinator: Renderer?) { dismantle(view, renderer: coordinator) }
+}
+#else
+extension PortalEffect: NSViewRepresentable {
+    func makeNSView(context: Context) -> MTKView { makeView(renderer: context.coordinator) }
+    func updateNSView(_ view: MTKView, context: Context) { update(view, renderer: context.coordinator) }
+    static func dismantleNSView(_ view: MTKView, coordinator: Renderer?) { dismantle(view, renderer: coordinator) }
+}
+
+/// Lets clicks through to the button drawn over the portal.
+private final class PortalMetalView: MTKView {
+    override func hitTest(_ point: NSPoint) -> NSView? { nil }
+}
+
+/// Turns the pointer's place over the window into the tilt that a phone gets from its gyroscope: the light leans
+/// towards the pointer and drifts back to neutral when the pointer leaves the window or another app comes to the front.
+private struct PointerTilt {
+    var reach: Float = 0.55
+    private var tilt = SIMD2<Float>(repeating: 0)
+
+    mutating func update(view: NSView, dt: Float) -> SIMD2<Float> {
+        var target = SIMD2<Float>(repeating: 0)
+        if NSApp.isActive, let window = view.window, let content = window.contentView {
+            let point = content.convert(window.mouseLocationOutsideOfEventStream, from: nil)
+            if content.bounds.contains(point) {
+                // Measured from the portal's centre in y-up points, against half the window's shorter side.
+                let centre = content.convert(CGPoint(x: view.bounds.midX, y: view.bounds.midY), from: view)
+                let half = Float(max(1, min(content.bounds.width, content.bounds.height) / 2))
+                let offset = SIMD2(Float(point.x - centre.x), Float(content.isFlipped ? centre.y - point.y : point.y - centre.y)) / half
+                // PortalLight leans away from the tilt, so the tilt points away from the pointer.
+                target = -SIMD2(tanh(offset.x), tanh(offset.y)) * reach
+            }
+        }
+        tilt += (target - tilt) * (1 - exp(-dt * 5))
+        return tilt
+    }
+}
+#endif

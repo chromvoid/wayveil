@@ -1,7 +1,6 @@
 [
   {
-    "name": "all-without-overrides",
-    "routing": "ALL",
+    "name": "base-without-overrides",
     "base": {
       "format": 1,
       "version": 1,
@@ -29,55 +28,17 @@
     },
     "expected": {
       "proxy_suffix": [],
-      "direct_suffix": [],
-      "direct_domain": []
-    }
-  },
-  {
-    "name": "all-personal-direct",
-    "routing": "ALL",
-    "base": {
-      "format": 1,
-      "version": 1,
-      "categories": [
-        {
-          "id": "base",
-          "title": {
-            "ru": "Тест",
-            "en": "Test"
-          },
-          "domain_suffix": [
-            "ru",
-            "vk.com"
-          ],
-          "domain": [
-            "exact.example"
-          ]
-        }
-      ]
-    },
-    "overrides": {
-      "format": 1,
-      "direct": [
-        "bank.example"
-      ],
-      "proxy": [
-        "news.example.ru"
-      ]
-    },
-    "expected": {
-      "proxy_suffix": [
-        "news.example.ru"
-      ],
       "direct_suffix": [
-        "bank.example"
+        "ru",
+        "vk.com"
       ],
-      "direct_domain": []
+      "direct_domain": [
+        "exact.example"
+      ]
     }
   },
   {
     "name": "russian-direct-base-and-overrides",
-    "routing": "RUSSIAN_DIRECT",
     "base": {
       "format": 1,
       "version": 1,
@@ -123,7 +84,6 @@
   },
   {
     "name": "deduplicate-personal-and-base",
-    "routing": "RUSSIAN_DIRECT",
     "base": {
       "format": 1,
       "version": 1,
